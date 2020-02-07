@@ -1,0 +1,13 @@
+---
+title: "Scenario 3: Non-parametric Cox Model"
+author: "Adina Zhang"
+date: "February 7, 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+source("./sim.R")
+```
+
