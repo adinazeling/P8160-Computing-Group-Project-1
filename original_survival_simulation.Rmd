@@ -1,0 +1,131 @@
+---
+title: "Survival Analysis Simulation Study"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+```
+
+Create a function that will create a dataset from a specific baseline hazard function
+
+```{r}
+
+set.seed(123123)
+
+# N = sample size    
+# lambda = scale parameter in exponential, weibull, "cox" (> 0)
+# gamma = shape parameter in weibull (> 0)
+# alpha = shape parameter in "cox" (-inf to inf)
+# beta = fixed treatment effect parameter
+
+generate_data = function(N, beta, distribution, lambda, gamma, alpha) {
+  
+  #Inverse survival function from baseline hazard functions to obtain event times
+  exponential = function(u, x, lambda, beta) {
+    time = -log(u) / (exp(x * beta) * lambda) }
+  
+  weibull = function(u, x, lambda, gamma, beta) {
+    time = ( -log(u) / (exp(x * beta) * lambda) ) ^ (1 / gamma) }
+  
+  cox = function(u, x, lambda, alpha, beta) {
+    time = (1/alpha) * log( 1 - (alpha * log(u) / (lambda * exp(beta * x))) ) }
+  
+  #treatment assignment
+  x = 1 * (runif(10) < 0.5)
+
+  #generate event times
+  u = runif(N)
+  
+  if (distribution == "exponential") {
+    time = exponential(u, x, lambda, beta) } 
+  else if (distribution == "weibull") {
+    time = weibull(u, x, lambda, gamma, beta) }
+  else { 
+    time = cox(u, x, lambda, alpha, beta) } 
+  
+  #censoring time
+  C = rexp(N, lambda)
+
+  # follow-up times and event indicators
+  observed_time = pmin(time, C)
+  status = 1 * (time <= C)
+
+  # data set
+  survival_data = data.frame(id = 1:N,
+                             time = time,
+                             status = status,
+                             x = x)
+}
+```
+
+Scenario 1: exponential baseline hazard
+
+```{r}
+
+#try different betas [0, 10]
+#try different N (100, 250, 500, 1000)
+#possibly vary lambda, gamma, alpha - not a priority
+
+data = generate_data(N = 500, beta = 0, distribution = "cox", lambda = 3, gamma = 3, alpha = 2)
+
+fit.exponential = survreg(Surv(data$time) ~ data$x, dist = "exponential") 
+#summary(fit.exponential)
+- fit.exponential$coefficients[-1]
+
+fit.weibull = survreg(Surv(data$time) ~ data$x, dist = "weibull") 
+#summary(fit.weibull)
+- fit.weibull$coefficients[-1] / fit.weibull$scale
+
+fit.cox = coxph(Surv(data$time) ~ data$x) 
+summary(fit.cox)
+
+```
+
+Scenario 2: weibull baseline hazard
+
+```{r}
+
+#try different betas [0, 10]
+#try different N (100, 250, 500, 1000)
+#possibly vary lambda, gamma, alpha - not a priority
+
+data = generate_data(N = 500, beta = 6, distribution = "cox", lambda = 3, gamma = 3, alpha = 2)
+
+fit.exponential = survreg(Surv(data$time) ~ data$x, dist = "exponential") 
+#summary(fit.exponential)
+- fit.exponential$coefficients[-1]
+
+fit.weibull = survreg(Surv(data$time) ~ data$x, dist = "weibull") 
+#summary(fit.weibull)
+- fit.weibull$coefficients[-1] / fit.weibull$scale
+
+fit.cox = coxph(Surv(data$time) ~ data$x) 
+summary(fit.cox)
+```
+
+Scenario 3: Gompertz baseline hazard
+
+```{r}
+
+#try different betas [0, 10]
+#try different N (100, 250, 500, 1000)
+#possibly vary lambda, gamma, alpha (not a priority)
+
+data = generate_data(N = 500, beta = 6, distribution = "cox", lambda = 3, gamma = 3, alpha = 2)
+
+fit.exponential = survreg(Surv(data$time) ~ data$x, dist = "exponential") 
+#summary(fit.exponential)
+- fit.exponential$coefficients[-1]
+
+fit.weibull = survreg(Surv(data$time) ~ data$x, dist = "weibull") 
+#summary(fit.weibull)
+- fit.weibull$coefficients[-1] / fit.weibull$scale
+
+fit.cox = coxph(Surv(data$time) ~ data$x) 
+summary(fit.cox)
+
+```
+
