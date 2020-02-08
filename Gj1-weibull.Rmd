@@ -1,0 +1,64 @@
+---
+title: "Gj1_computing"
+author: "Jin Ge"
+date: "2/7/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      warning = F,
+                      message = F)
+
+require(survival)
+```
+
+
+```{r}
+# Weibull
+fit.weibull <- survreg(Surv(y) ~ x[, 1] + x[, 2], dist = "weibull")
+summary(fit.weibull)
+- fit.weibull$coefficients[-1] / fit.weibull$scale
+
+
+
+### assume that lamda=par_shape, gamma=par_scale
+## assign model's coefficient to shape and scale
+par_shape <- 1/fit.weibull$scale      ## shape=lamda
+par_scale <- exp(coef(fit.weibull)) ## scale=gamma
+
+## mean 
+weib_mean <- function(par_shape, par_scale){
+  mean = (1/par_shape)^(1/par_scale) * gamma(1+1/par_scale)
+  mean
+}
+
+## bias
+weib_bias <- function(x, weib_mean){
+  bias = mean(x)-weib_mean
+  bias
+}
+  
+## std.error/variance
+weib_var <- function(par_shape, par_scale){
+  var = (1/par_shape)^(2/par_scale) * (gamma(1+2/par_scale)-digamma(1+1/par_scale))
+  var
+}
+  
+## beta coefficient
+weib_coef <- function(par_shape){
+  coef = -par_shape
+  coef
+}
+  
+## 95% CI
+weib_CI <- function(par_shape, par_scale){
+  CI_shape = par_shape + c(-1,1)sqrt(vcov(fit.weibull)["shape", "shape"])
+  CI_scale = par_scale + c(-1,1)sqrt(vcov(fit.weibull)["scale", "scale"])
+  
+  CI_shape
+  CI_scale
+}
+  
+```
+
