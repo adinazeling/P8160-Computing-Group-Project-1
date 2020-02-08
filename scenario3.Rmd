@@ -12,9 +12,9 @@ library(survival)
 source("./sim.R")
 ```
 
-```{r, message = FALSE}
+```{r, message = FALSE, warning = FALSE}
 # Set up coefficient vectors
-N = 100
+N = 1000
 exp_beta = rep(NA, N)
 weibull_beta = rep(NA, N)
 cox_beta = rep(NA, N)
