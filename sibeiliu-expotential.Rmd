@@ -1,0 +1,15 @@
+---
+title: "scenario1-sibeiliu"
+author: "Sibei Liu"
+date: "2020/2/8"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = F,message = F)
+require(survival)
+install.packages("survreg")
+
+```
+
+
