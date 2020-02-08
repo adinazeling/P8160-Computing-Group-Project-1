@@ -14,16 +14,19 @@ source("./sim.R")
 
 ```{r, message = FALSE, warning = FALSE}
 # Set up coefficient vectors
-N = 1000
+N = 100
 exp_beta = rep(NA, N)
 weibull_beta = rep(NA, N)
 cox_beta = rep(NA, N)
 
 for (i in 1:N) {
   # Generate simulated data
-  data = generate_data(N = 500, beta = 6, distribution = "cox", 
-                       lambda = 3, gamma = 3, alpha = 2)
   
+  #data = generate_data(N = 500, beta = 6, distribution = "cox", 
+                       #lambda = 3, gamma = 3, alpha = 2)
+  data = generate_data(N = 500, beta = 4, distribution = "cox", 
+                       lambda = 0.1, gamma = 4, alpha = 4)
+
   # Fit three survival distributions
   fit.exponential = survreg(Surv(data$time) ~ data$x, dist = "exponential") 
   fit.weibull = survreg(Surv(data$time) ~ data$x, dist = "weibull")
@@ -35,6 +38,7 @@ for (i in 1:N) {
   cox_beta[i] = fit.cox$coefficients[1]
   
 }
+
 ```
 
 

@@ -7,19 +7,19 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
+library(survival)
 ```
 
 Create a function that will create a dataset from a specific baseline hazard function
 
 ```{r}
 
-set.seed(123123)
-
 # N = sample size    
 # lambda = scale parameter in exponential, weibull, "cox" (> 0)
 # gamma = shape parameter in weibull (> 0)
 # alpha = shape parameter in "cox" (-inf to inf)
 # beta = fixed treatment effect parameter
+set.seed(123123)
 
 generate_data = function(N, beta, distribution, lambda, gamma, alpha) {
   
@@ -34,7 +34,7 @@ generate_data = function(N, beta, distribution, lambda, gamma, alpha) {
     time = (1/alpha) * log( 1 - (alpha * log(u) / (lambda * exp(beta * x))) ) }
   
   #treatment assignment
-  x = 1 * (runif(10) < 0.5)
+  x = 1 * (runif(N) < 0.5)
 
   #generate event times
   u = runif(N)
@@ -69,7 +69,7 @@ Scenario 1: exponential baseline hazard
 #try different N (100, 250, 500, 1000)
 #possibly vary lambda, gamma, alpha - not a priority
 
-data = generate_data(N = 500, beta = 0, distribution = "cox", lambda = 3, gamma = 3, alpha = 2)
+data = generate_data(N = 500, beta = 5, distribution = "exponential", lambda = 0.1, gamma = 4, alpha = 4)
 
 fit.exponential = survreg(Surv(data$time) ~ data$x, dist = "exponential") 
 #summary(fit.exponential)
@@ -92,7 +92,7 @@ Scenario 2: weibull baseline hazard
 #try different N (100, 250, 500, 1000)
 #possibly vary lambda, gamma, alpha - not a priority
 
-data = generate_data(N = 500, beta = 6, distribution = "cox", lambda = 3, gamma = 3, alpha = 2)
+data = generate_data(N = 500, beta = 6, distribution = "weibull", lambda = 0.1, gamma = 4, alpha = 42)
 
 fit.exponential = survreg(Surv(data$time) ~ data$x, dist = "exponential") 
 #summary(fit.exponential)
@@ -114,7 +114,7 @@ Scenario 3: Gompertz baseline hazard
 #try different N (100, 250, 500, 1000)
 #possibly vary lambda, gamma, alpha (not a priority)
 
-data = generate_data(N = 500, beta = 6, distribution = "cox", lambda = 3, gamma = 3, alpha = 2)
+data = generate_data(N = 500, beta = 6, distribution = "cox", lambda = 0.1, gamma = 4, alpha = 4)
 
 fit.exponential = survreg(Surv(data$time) ~ data$x, dist = "exponential") 
 #summary(fit.exponential)

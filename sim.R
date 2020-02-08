@@ -21,7 +21,7 @@ generate_data = function(N, beta, distribution, lambda, gamma, alpha) {
     time = (1/alpha) * log( 1 - (alpha * log(u) / (lambda * exp(beta * x))) ) }
   
   #treatment assignment
-  x = 1 * (runif(10) < 0.5)
+  x = 1 * (runif(N) < 0.5)
   
   #generate event times
   u = runif(N)
