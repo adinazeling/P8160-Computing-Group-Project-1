@@ -14,9 +14,62 @@ library(tidyverse)
 ```
 
 
+
+```{r}
+# simulation data function
+set.seed(123123)
+
+# N = sample size    
+# lambda = scale parameter in exponential, weibull, "cox" (> 0)
+# gamma = shape parameter in weibull (> 0)
+# alpha = shape parameter in "cox" (-inf to inf)
+# beta = fixed treatment effect parameter
+
+generate_data = function(N, beta, distribution, lambda, gamma, alpha) {
+  
+  #Inverse survival function from baseline hazard functions to obtain event times
+  exponential = function(u, x, lambda, beta) {
+    time = -log(u) / (exp(x * beta) * lambda) }
+  
+  weibull = function(u, x, lambda, gamma, beta) {
+    time = ( -log(u) / (exp(x * beta) * lambda) ) ^ (1 / gamma) }
+  
+  cox = function(u, x, lambda, alpha, beta) {
+    time = (1/alpha) * log( 1 - (alpha * log(u) / (lambda * exp(beta * x))) ) }
+  
+  #treatment assignment
+  x = 1 * (runif(N) < 0.5)
+  
+  #generate event times
+  u = runif(N)
+  
+  if (distribution == "exponential") {
+    time = exponential(u, x, lambda, beta) } 
+  else if (distribution == "weibull") {
+    time = weibull(u, x, lambda, gamma, beta) }
+  else { 
+    time = cox(u, x, lambda, alpha, beta) } 
+  
+  #censoring time
+  C = rexp(N, lambda)
+  
+  # follow-up times and event indicators
+  observed_time = pmin(time, C)
+  status = 1 * (time <= C)
+  
+  # data set
+  survival_data = data.frame(id = 1:N,
+                             time = time,
+                             status = status,
+                             x = x)
+}
+```
+
+
+
 ```{r}
 #data generate
-data = generate_data(N = 500, beta = 5, distribution = "exponential", lambda = 0.1, gamma = 4, alpha = 4)jh.
+data = generate_data(N = 500, beta = 5, distribution = "exponential", lambda = 0.1, gamma = 4, alpha = 4)
 
 fit.exponential = survreg(Surv(data$time) ~ data$x, dist = "exponential") 
 summary(fit.exponential)
@@ -29,7 +82,6 @@ lambda
 ```
 
 ```{r}
-
 ## mean 
 exp_mean =1/lambda
 
