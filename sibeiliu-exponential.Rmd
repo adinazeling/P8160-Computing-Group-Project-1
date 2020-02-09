@@ -1,0 +1,53 @@
+---
+title: "scenario1-sibeiliu"
+author: "Sibei Liu"
+date: "2020/2/8"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = F,message = F)
+require(survival)
+library(broom)
+library(tidyverse)
+
+```
+
+
+```{r}
+#data generate
+data = generate_data(N = 500, beta = 5, distribution = "exponential", lambda = 0.1, gamma = 4, alpha = 4)jh.
+
+fit.exponential = survreg(Surv(data$time) ~ data$x, dist = "exponential") 
+summary(fit.exponential)
+- fit.exponential$coefficients[-1]
+d=fit.exponential%>%broom::tidy()
+
+#h(t)=λ=exp(−Intercept)
+lambda=exp(-d[1,2])
+lambda
+```
+
+```{r}
+
+## mean 
+exp_mean =1/lambda
+
+## bias
+n=length(data$time)
+for (i in 1:n){
+  exp_bias_total=data$time[i]-exp_mean
+  return(exp_bias_total)
+}
+exp_bias=exp_bias_total/n
+
+## std.error/variance
+for (i in 1:n){
+  exp_var_total=(data$time[i]-exp_mean)^2
+  return(exp_var_total)
+}
+exp_var=exp_var_total/n
+
+
+```
+
