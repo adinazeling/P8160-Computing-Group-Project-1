@@ -14,16 +14,19 @@ source("./sim.R")
 ```
 
 
+
 ```{r}
  #data generate
+
+n_circle=1000
 sim_survival=function(N){
   
-data = generate_data(N = 500, beta = 5, distribution = "exponential", lambda = 0.1, gamma = 4, alpha = 4)
+data = generate_data(N, beta = 4, distribution = "exponential", lambda = 0.1, gamma = 4, alpha = 4)
 
   # Fit three survival distributions
-  fit.exponential = survreg(Surv(data$time) ~ data$x, dist = "exponential") 
-  fit.weibull = survreg(Surv(data$time) ~ data$x, dist = "weibull")
-  fit.cox = coxph(Surv(data$time) ~ data$x) 
+  fit.exponential = survreg(Surv(data$time,data$status) ~ data$x, dist = "exponential") 
+  fit.weibull = survreg(Surv(data$time,data$status) ~ data$x, dist = "weibull")
+  fit.cox = coxph(Surv(data$time,data$status) ~ data$x) 
   
   # Save beta coefficients 
   exp_beta = -fit.exponential$coefficients[-1]
@@ -39,25 +42,25 @@ data = generate_data(N = 500, beta = 5, distribution = "exponential", lambda = 0
 }
 
 sim_results = 
-  tibble(sample_size = seq(100,500,by=50)) %>% 
+  tibble(sample_size = seq(100,500,by=20)) %>% 
   mutate(
-    output_list=map(.x=sample_size, ~rerun(100,sim_survival(N=.x))),
+    output_list=map(.x=sample_size, ~rerun(n_circle,sim_survival(N=.x))),
     output_df=map(output_list,bind_rows)) %>% 
   select(-output_list) %>% 
   unnest()
     
 mse_sim=function(x){
   c=0
-  for(i in 1:100){
-c=sum((x[i]-5)^2)/100
+  for(i in 1:n_circle){
+ c=mean((x[i]-4)^2)
 return(c)
   }
 }
 
 bias_sim=function(x){
   d=0
-  for(i in 1:100){
-d=sum((x[i]-5))/100
+  for(i in 1:n_circle){
+d=mean((x[i]-4))
 return(d)
   }
 }
@@ -103,7 +106,7 @@ cox_data=cox_data %>%
 total=bind_rows(exp_data,weibull_data,cox_data)
 
 ## mse line
-ggplot(data=total,aes(x=sample_size,y=beta_MSE,color=type))+geom_line()+labs(title="MSE change with sample size")
+ggplot(data=total,aes(x=sample_size,y=beta_MSE,color=type))+geom_smooth(se=FALSE)+labs(title="MSE change with sample size")
 
 ## boxplot of mse when sample size is 500
 
@@ -116,6 +119,9 @@ box_plot_data=sim_results %>% filter(sample_size==500) %>%
 
 ggplot(data=box_plot_data,aes(x=type,y=beta,color=type))+geom_boxplot()+labs(title="beta distribution among three models when sample size=500")
 
+
+## 
+ggplot(data=total,aes(x=sample_size,y=beta_bias,color=type))+geom_smooth(se=FALSE)+labs(title="Bias change with sample size")
 
 ```
 
