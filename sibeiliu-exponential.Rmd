@@ -51,7 +51,7 @@ sim_results =
 mse_sim=function(x){
   c=0
   for(i in 1:n_circle){
-c=sum((x[i]-5)^2)/n_circle
+ c=mean((x[i]-4)^2)
 return(c)
   }
 }
@@ -59,7 +59,7 @@ return(c)
 bias_sim=function(x){
   d=0
   for(i in 1:n_circle){
-d=sum((x[i]-5))/n_circle
+d=mean((x[i]-4))
 return(d)
   }
 }
@@ -105,7 +105,7 @@ cox_data=cox_data %>%
 total=bind_rows(exp_data,weibull_data,cox_data)
 
 ## mse line
-ggplot(data=total,aes(x=sample_size,y=beta_MSE,color=type))+geom_line()+labs(title="MSE change with sample size")
+ggplot(data=total,aes(x=sample_size,y=beta_MSE,color=type))+geom_smooth(se=FALSE)+labs(title="MSE change with sample size")
 
 ## boxplot of mse when sample size is 500
 
@@ -118,6 +118,9 @@ box_plot_data=sim_results %>% filter(sample_size==500) %>%
 
 ggplot(data=box_plot_data,aes(x=type,y=beta,color=type))+geom_boxplot()+labs(title="beta distribution among three models when sample size=500")
 
+
+## 
+ggplot(data=total,aes(x=sample_size,y=beta_bias,color=type))+geom_smooth(se=FALSE)+labs(title="Bias change with sample size")
 
 ```
 
