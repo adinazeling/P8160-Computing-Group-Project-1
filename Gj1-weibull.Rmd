@@ -11,54 +11,116 @@ knitr::opts_chunk$set(echo = TRUE,
                       message = F)
 
 require(survival)
+library(broom)
+library(tidyverse)
+source("./sim.R")
 ```
 
 
 ```{r}
-# Weibull
-fit.weibull <- survreg(Surv(y) ~ x[, 1] + x[, 2], dist = "weibull")
-summary(fit.weibull)
-- fit.weibull$coefficients[-1] / fit.weibull$scale
-
-
-
-### assume that lamda=par_shape, gamma=par_scale
-## assign model's coefficient to shape and scale
-par_shape <- 1/fit.weibull$scale      ## shape=lamda
-par_scale <- exp(coef(fit.weibull)) ## scale=gamma
-
-## mean 
-weib_mean <- function(par_shape, par_scale){
-  mean = (1/par_shape)^(1/par_scale) * gamma(1+1/par_scale)
-  mean
-}
-
-## bias
-weib_bias <- function(x, weib_mean){
-  bias = mean(x)-weib_mean
-  bias
-}
+## generate the data of weibull
+sim_survival=function(N){
   
-## std.error/variance
-weib_var <- function(par_shape, par_scale){
-  var = (1/par_shape)^(2/par_scale) * (gamma(1+2/par_scale)-digamma(1+1/par_scale))
-  var
-}
+data = generate_data(N = 500, beta = 5, distribution = "weibull", lambda = 0.1, gamma = 4, alpha = 4)
+
+  # Fit three survival distributions
+  fit.exponential = survreg(Surv(data$time) ~ data$x, dist = "exponential") 
+  fit.weibull = survreg(Surv(data$time) ~ data$x, dist = "weibull")
+  fit.cox = coxph(Surv(data$time) ~ data$x) 
   
-## beta coefficient
-weib_coef <- function(par_shape){
-  coef = -par_shape
-  coef
-}
+  # Save beta coefficients 
+  exp_beta = -fit.exponential$coefficients[-1]
+  weibull_beta = -fit.weibull$coefficients[-1] / fit.weibull$scale
+  cox_beta = fit.cox$coefficients[1]
   
-## 95% CI
-weib_CI <- function(par_shape, par_scale){
-  CI_shape = par_shape + c(-1,1)sqrt(vcov(fit.weibull)["shape", "shape"])
-  CI_scale = par_scale + c(-1,1)sqrt(vcov(fit.weibull)["scale", "scale"])
-  
-  CI_shape
-  CI_scale
+  tibble(
+    exp_beta=exp_beta,
+    weibull_beta=weibull_beta,
+    cox_beta=cox_beta
+  )
+ 
 }
+
+
+sim_results = 
+  tibble(sample_size = seq(100,500, by =20)) %>% 
+  mutate(
+    output_list=map(.x=sample_size, ~rerun(100,sim_survival(N=.x))),
+    output_df=map(output_list,bind_rows)) %>% 
+  select(-output_list) %>% 
+  unnest()
+    
+mse_sim=function(x){
+  c=0
+  for(i in 1:100){
+c=sum((x[i]-5)^2)/100
+return(c)
+  }
+}
+
+bias_sim=function(x){
+  d=0
+  for(i in 1:100){
+d=sum((x[i]-5))/100
+return(d)
+  }
+}
+
+
+exp_data=sim_results %>% 
+  select(sample_size,exp_beta)%>% 
+  group_by(sample_size) %>% 
+  summarize(beta_mean = mean(exp_beta),
+            beta_var = var(exp_beta),
+             beta_MSE = mse_sim(exp_beta),
+            beta_bias=bias_sim(exp_beta))
+
+weibull_data=sim_results %>% 
+  select(sample_size,weibull_beta)%>% 
+  group_by(sample_size) %>% 
+  summarize(beta_mean = mean(weibull_beta),
+            beta_var = var(weibull_beta),
+             beta_MSE = mse_sim(weibull_beta),
+            beta_bias=bias_sim(weibull_beta))
+
+cox_data=sim_results %>% 
+  select(sample_size,cox_beta) %>% 
+  group_by(sample_size) %>% 
+  summarize(beta_mean = mean(cox_beta),
+            beta_var = var(cox_beta) ,
+            beta_MSE = mse_sim(cox_beta),
+            beta_bias=bias_sim(cox_beta))
+exp_data=exp_data %>% 
+  mutate(
+    type="exp"
+  )
+weibull_data=weibull_data %>% 
+  mutate(
+    type="weibull"
+  )
+
+cox_data=cox_data %>% 
+  mutate(
+    type="cox"
+  )
+
+total=bind_rows(exp_data,weibull_data,cox_data)
+
+## mse line
+ggplot(data=total,aes(x=sample_size,y=beta_MSE,color=type))+geom_line()+labs(title="MSE change with sample size")
+
+## boxplot of mse when sample size is 500
+
+box_plot_data=sim_results %>% filter(sample_size==500) %>% 
+   pivot_longer(
+    exp_beta:cox_beta,
+    names_to=("type"),
+    values_to = ("beta"))
+
+
+ggplot(data=box_plot_data,aes(x=type,y=beta,color=type))+geom_boxplot()+labs(title="beta distribution among three models when sample size=500")
+
+
   
 ```
 
