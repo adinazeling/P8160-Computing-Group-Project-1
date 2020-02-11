@@ -79,7 +79,7 @@ fit.weibull = survreg(Surv(data$time) ~ data$x, dist = "weibull")
 #summary(fit.weibull)
 - fit.weibull$coefficients[-1] / fit.weibull$scale
 
-fit.cox = coxph(Surv(data$time) ~ data$x) 
+fit.cox = coxph(Surv(data$time) ~ data$x)
 summary(fit.cox)
 
 ```
@@ -92,7 +92,24 @@ Scenario 2: weibull baseline hazard
 #try different N (100, 250, 500, 1000)
 #possibly vary lambda, gamma, alpha - not a priority
 
-data = generate_data(N = 500, beta = 6, distribution = "weibull", lambda = 0.1, gamma = 4, alpha = 42)
+
+  for (i in 1:N){
+  data = generate_data(N = 500, beta = 6, distribution = "weibull", lambda = 0.1,
+                       gamma = 4, alpha = 42)
+  
+  # Fit three survival distributions
+  fit.exponential = survreg(Surv(data$time) ~ data$x, dist = "exponential") 
+  fit.weibull = survreg(Surv(data$time) ~ data$x, dist = "weibull")
+  fit.cox = coxph(Surv(data$time) ~ data$x) 
+  
+  # Save beta coefficients 
+  exp_beta[i] = -fit.exponential$coefficients[-1]
+  weibull_beta[i] = -fit.weibull$coefficients[-1] / fit.weibull$scale
+  cox_beta[i] = fit.cox$coefficients[1]
+  }
+  
+
+
 
 fit.exponential = survreg(Surv(data$time) ~ data$x, dist = "exponential") 
 #summary(fit.exponential)
