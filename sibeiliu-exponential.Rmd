@@ -15,14 +15,9 @@ source("./sim.R")
 
 
 ```{r}
-N = 100
-exp_beta = rep(NA, N)
-weibull_beta = rep(NA, N)
-cox_beta = rep(NA, N)
-
-for (i in 1:N) {
+ #data generate
+sim_survival=function(N){
   
-  #data generate
 data = generate_data(N = 500, beta = 5, distribution = "exponential", lambda = 0.1, gamma = 4, alpha = 4)
 
   # Fit three survival distributions
@@ -31,33 +26,97 @@ data = generate_data(N = 500, beta = 5, distribution = "exponential", lambda = 0
   fit.cox = coxph(Surv(data$time) ~ data$x) 
   
   # Save beta coefficients 
-  exp_beta[i] = -fit.exponential$coefficients[-1]
-  weibull_beta[i] = -fit.weibull$coefficients[-1] / fit.weibull$scale
-  cox_beta[i] = fit.cox$coefficients[1]
+  exp_beta = -fit.exponential$coefficients[-1]
+  weibull_beta = -fit.weibull$coefficients[-1] / fit.weibull$scale
+  cox_beta = fit.cox$coefficients[1]
   
+  tibble(
+    exp_beta=exp_beta,
+    weibull_beta=weibull_beta,
+    cox_beta=cox_beta
+  )
+ 
 }
+
+sim_results = 
+  tibble(sample_size = seq(100,500,by=50)) %>% 
+  mutate(
+    output_list=map(.x=sample_size, ~rerun(100,sim_survival(N=.x))),
+    output_df=map(output_list,bind_rows)) %>% 
+  select(-output_list) %>% 
+  unnest()
+    
+mse_sim=function(x){
+  c=0
+  for(i in 1:100){
+c=sum((x[i]-5)^2)/100
+return(c)
+  }
+}
+
+bias_sim=function(x){
+  d=0
+  for(i in 1:100){
+d=sum((x[i]-5))/100
+return(d)
+  }
+}
+
+
+exp_data=sim_results %>% 
+  select(sample_size,exp_beta)%>% 
+  group_by(sample_size) %>% 
+  summarize(beta_mean = mean(exp_beta),
+            beta_var = var(exp_beta),
+             beta_MSE = mse_sim(exp_beta),
+            beta_bias=bias_sim(exp_beta))
+
+weibull_data=sim_results %>% 
+  select(sample_size,weibull_beta)%>% 
+  group_by(sample_size) %>% 
+  summarize(beta_mean = mean(weibull_beta),
+            beta_var = var(weibull_beta),
+             beta_MSE = mse_sim(weibull_beta),
+            beta_bias=bias_sim(weibull_beta))
+
+cox_data=sim_results %>% 
+  select(sample_size,cox_beta) %>% 
+  group_by(sample_size) %>% 
+  summarize(beta_mean = mean(cox_beta),
+            beta_var = var(cox_beta) ,
+            beta_MSE = mse_sim(cox_beta),
+            beta_bias=bias_sim(cox_beta))
+exp_data=exp_data %>% 
+  mutate(
+    type="exp"
+  )
+weibull_data=weibull_data %>% 
+  mutate(
+    type="weibull"
+  )
+
+cox_data=cox_data %>% 
+  mutate(
+    type="cox"
+  )
+
+total=bind_rows(exp_data,weibull_data,cox_data)
+
+## mse line
+ggplot(data=total,aes(x=sample_size,y=beta_MSE,color=type))+geom_line()+labs(title="MSE change with sample size")
+
+## boxplot of mse when sample size is 500
+
+box_plot_data=sim_results %>% filter(sample_size==500) %>% 
+   pivot_longer(
+    exp_beta:cox_beta,
+    names_to=("type"),
+    values_to = ("beta"))
+
+
+ggplot(data=box_plot_data,aes(x=type,y=beta,color=type))+geom_boxplot()+labs(title="beta distribution among three models when sample size=500")
+
+
 ```
 
-```{r}
-hist(exp_beta)
-hist(weibull_beta)
-hist(cox_beta)
-# mean of beta
-exp_mean=mean(exp_beta)
-weilbull_mean=mean(weibull_beta)
-cox_mean=mean(cox_beta)
-# varience of beta
-exp_var=var(exp_beta)
-weilbull_var=var(weibull_beta)
-cox_var=var(cox_beta)
-# bias,mse
-for (i in 1:N) {
-exp_bias=mean(exp_beta[i]-exp_mean)
-weilbull_bias=mean(weibull_beta[i]-weilbull_mean)
-cox_bias=mean(cox_beta[i]-cox_mean)
-exp_mse=mean((exp_beta[i]-5)^2)
-weilbull_mse=mean((weibull_beta[i]-5)^2)
-cox_mse=mean((cox_beta[i]-5)^2)
-}
-data.frame("type"=c("exp","weill","cox"),"mean"=c(exp_mean,weilbull_mean,cox_mean),"varience"=c(exp_var,weilbull_var,cox_var),"bias"= c(exp_bias,weilbull_bias,cox_bias),"mse"=c(exp_mse,weilbull_mse,cox_mse),"CI_lower"=c(exp_mean-sd(exp_beta)/length(exp_beta),weilbull_mean-sd(weibull_beta)/length(exp_beta),cox_mean-sd(cox_beta)/length(exp_beta)),"CI_upper"=c(exp_mean+sd(exp_beta)/length(exp_beta),weilbull_mean+sd(weibull_beta)/length(exp_beta),cox_mean+sd(cox_beta)/length(exp_beta)))
-```
+
