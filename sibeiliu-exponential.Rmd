@@ -16,14 +16,16 @@ source("./sim.R")
 
 ```{r}
  #data generate
+
+n_circle=1000
 sim_survival=function(N){
   
-data = generate_data(N = 500, beta = 5, distribution = "exponential", lambda = 0.1, gamma = 4, alpha = 4)
+data = generate_data(N, beta = 4, distribution = "exponential", lambda = 0.1, gamma = 4, alpha = 4)
 
   # Fit three survival distributions
-  fit.exponential = survreg(Surv(data$time) ~ data$x, dist = "exponential") 
-  fit.weibull = survreg(Surv(data$time) ~ data$x, dist = "weibull")
-  fit.cox = coxph(Surv(data$time) ~ data$x) 
+  fit.exponential = survreg(Surv(data$time,data$status) ~ data$x, dist = "exponential") 
+  fit.weibull = survreg(Surv(data$time,data$status) ~ data$x, dist = "weibull")
+  fit.cox = coxph(Surv(data$time,data$status) ~ data$x) 
   
   # Save beta coefficients 
   exp_beta = -fit.exponential$coefficients[-1]
@@ -39,25 +41,25 @@ data = generate_data(N = 500, beta = 5, distribution = "exponential", lambda = 0
 }
 
 sim_results = 
-  tibble(sample_size = seq(100,500,by=50)) %>% 
+  tibble(sample_size = seq(100,500,by=20)) %>% 
   mutate(
-    output_list=map(.x=sample_size, ~rerun(100,sim_survival(N=.x))),
+    output_list=map(.x=sample_size, ~rerun(n_circle,sim_survival(N=.x))),
     output_df=map(output_list,bind_rows)) %>% 
   select(-output_list) %>% 
   unnest()
     
 mse_sim=function(x){
   c=0
-  for(i in 1:100){
-c=sum((x[i]-5)^2)/100
+  for(i in 1:n_circle){
+c=sum((x[i]-5)^2)/n_circle
 return(c)
   }
 }
 
 bias_sim=function(x){
   d=0
-  for(i in 1:100){
-d=sum((x[i]-5))/100
+  for(i in 1:n_circle){
+d=sum((x[i]-5))/n_circle
 return(d)
   }
 }
