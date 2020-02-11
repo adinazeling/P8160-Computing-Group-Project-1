@@ -21,7 +21,7 @@ source("./sim.R")
 ## generate the data of weibull
 sim_survival=function(N){
   
-data = generate_data(N = 500, beta = 5, distribution = "weibull", lambda = 0.1, gamma = 4, alpha = 4)
+data = generate_data(N = 500, beta = 4, distribution = "weibull", lambda = 0.1, gamma = 4, alpha = 4)
 
   # Fit three survival distributions
   fit.exponential = survreg(Surv(data$time) ~ data$x, dist = "exponential") 
@@ -49,11 +49,12 @@ sim_results =
     output_df=map(output_list,bind_rows)) %>% 
   select(-output_list) %>% 
   unnest()
-    
+
+
 mse_sim=function(x){
   c=0
   for(i in 1:100){
-c=sum((x[i]-5)^2)/100
+c=sum((x[i]-4)^2)/100
 return(c)
   }
 }
@@ -61,7 +62,7 @@ return(c)
 bias_sim=function(x){
   d=0
   for(i in 1:100){
-d=sum((x[i]-5))/100
+d=sum((x[i]-4))/100
 return(d)
   }
 }
@@ -90,6 +91,7 @@ cox_data=sim_results %>%
             beta_var = var(cox_beta) ,
             beta_MSE = mse_sim(cox_beta),
             beta_bias=bias_sim(cox_beta))
+
 exp_data=exp_data %>% 
   mutate(
     type="exp"
