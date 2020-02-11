@@ -56,6 +56,7 @@ generate_data = function(N, beta, distribution, lambda, gamma, alpha) {
   # data set
   survival_data = data.frame(id = 1:N,
                              time = time,
+                             observed_time = observed_time,
                              status = status,
                              x = x)
 }
@@ -71,16 +72,15 @@ Scenario 1: exponential baseline hazard
 
 data = generate_data(N = 500, beta = 5, distribution = "exponential", lambda = 0.1, gamma = 4, alpha = 4)
 
-fit.exponential = survreg(Surv(data$time) ~ data$x, dist = "exponential") 
+fit.exponential = survreg(Surv(data$observed_time, data$status) ~ data$x, dist = "exponential") 
 #summary(fit.exponential)
 - fit.exponential$coefficients[-1]
 
-fit.weibull = survreg(Surv(data$time) ~ data$x, dist = "weibull") 
+fit.weibull = survreg(Surv(data$time, data$status) ~ data$x, dist = "weibull") 
 #summary(fit.weibull)
 - fit.weibull$coefficients[-1] / fit.weibull$scale
 
-fit.cox = coxph(Surv(data$time) ~ data$x)
-summary(fit.cox)
+
 
 ```
 

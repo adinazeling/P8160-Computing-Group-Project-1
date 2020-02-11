@@ -43,6 +43,7 @@ generate_data = function(N, beta, distribution, lambda, gamma, alpha) {
   # data set
   survival_data = data.frame(id = 1:N,
                              time = time,
+                             observed_time = observed_time,
                              status = status,
                              x = x)
 }
