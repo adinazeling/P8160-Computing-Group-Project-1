@@ -1,5 +1,5 @@
 ---
-title: "failed code from sibei"
+title: " code from sibei"
 author: "Sibei Liu"
 date: "2020/2/11"
 output: html_document
@@ -132,8 +132,8 @@ results_plot=results_mod %>% group_by(sample_size,censored,type) %>%
 ```{r}
 ggplot(data=results_plot,aes(x=sample_size,y=beta_MSE,color=type))+
  geom_point() +
-  geom_line(size = 1, se = FALSE) +
-  facet_grid(.~censored, scales = "free_y") +
+  geom_line(size = 1) +
+  facet_grid(.~censored) +
   labs(title = "Sample size vs MSE by Survival Model",
        x = "Sample Size",
        y = "MSE") +
@@ -146,11 +146,11 @@ ggplot(data=results_plot,aes(x=sample_size,y=beta_MSE,color=type))+
 
 ggplot(data=results_plot,aes(x=sample_size,y=beta_bias,color=type))+
 geom_point() +
-  geom_line(size = 1, se = FALSE) +
-  facet_grid(.~censored, scales = "free_y") +
+  geom_line(size = 1) +
+  facet_grid(.~censored) +
   labs(title = "Sample size vs MSE by Survival Model",
        x = "Sample Size",
-       y = "MSE") +
+       y = "Bias") +
   theme_bw() + 
   theme(strip.text.x = element_text(size = 12)) + 
   theme(text = element_text(size = 10),
@@ -206,7 +206,8 @@ beta_results_plot=betachange_results_mod %>% group_by(beta_size,censored,type) %
 
 
 ```{r}
-ggplot(data=beta_results_plot,aes(x=beta_size,y=beta_MSE,color=type))+
+ggplot(data=beta_results_plot %>% 
+  filter(beta_size != 6),aes(x=beta_size,y=beta_MSE,color=type))+
  geom_point() +
   geom_line(size = 1, se = FALSE) +
   facet_grid(.~censored, scales = "free_y") +
@@ -220,7 +221,8 @@ ggplot(data=beta_results_plot,aes(x=beta_size,y=beta_MSE,color=type))+
 
 
 
-ggplot(data=beta_results_plot,aes(x=beta_size,y=beta_bias,color=type))+
+ggplot(data=beta_results_plot%>% 
+  filter(beta_size != 6),aes(x=beta_size,y=beta_bias,color=type))+
 geom_point() +
   geom_line(size = 1, se = FALSE) +
   facet_grid(.~censored, scales = "free_y") +
