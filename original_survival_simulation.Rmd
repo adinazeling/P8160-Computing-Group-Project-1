@@ -51,7 +51,7 @@ generate_data = function(N, beta, distribution, lambda, gamma, alpha) {
 
   # follow-up times and event indicators
   observed_time = pmin(time, C)
-  status = 1 * (time <= C)
+  status = 1 * (time >= C)
 
   # data set
   survival_data = data.frame(id = 1:N,

@@ -91,10 +91,10 @@ set.seed(12345)
 sim_results = 
   tibble(sample_size = c(100, 150, 200, 250, 300, 350, 400, 450, 500)) %>% 
   mutate(
-    output_uncensored = map(.x = sample_size, ~simulate(sim = 1000, N = .x, beta = 4)$performance),
-    output_censored = map(.x = sample_size, ~simulate(sim = 1000, N = .x, beta = 4, censor = TRUE)$performance),
-    beta_uncensored = map(.x = sample_size, ~simulate(sim = 1000, N = .x, beta = 4)$coefficients),
-    beta_censored = map(.x = sample_size, ~simulate(sim = 1000, N = .x, beta = 4, censor = TRUE)$coefficients),
+    output_uncensored = map(.x = sample_size, ~simulate(sim = 10, N = .x, beta = 4)$performance),
+    output_censored = map(.x = sample_size, ~simulate(sim = 10, N = .x, beta = 4, censor = TRUE)$performance),
+    beta_uncensored = map(.x = sample_size, ~simulate(sim = 10, N = .x, beta = 4)$coefficients),
+    beta_censored = map(.x = sample_size, ~simulate(sim = 10, N = .x, beta = 4, censor = TRUE)$coefficients),
     output_uncensored = map(.x = output_uncensored, ~mutate(.x, censor = FALSE)),
     output_censored = map(.x = output_censored, ~mutate(.x, censor = TRUE))) 
 
