@@ -1,0 +1,225 @@
+---
+title: "failed code from sibei"
+author: "Sibei Liu"
+date: "2020/2/11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = F,message = F)
+require(survival)
+library(broom)
+library(tidyverse)
+library(patchwork)
+source("./sim.R")
+```
+
+```{r}
+set.seed(123123)
+ #data generate
+
+n_circle=1000
+
+sim_survival_censored=function(N){
+  
+data = generate_data(N, beta = 4, distribution = "exponential", lambda = 0.1, gamma = 4, alpha = 4)
+
+  # Fit three survival distributions
+  fit.exponential = survreg(Surv(data$observed_time,data$status) ~ data$x, dist = "exponential") 
+  fit.weibull = survreg(Surv(data$observed_time,data$status) ~ data$x, dist = "weibull")
+  fit.cox = coxph(Surv(data$observed_time,data$status) ~ data$x) 
+  
+  # Save beta coefficients 
+  exp_beta = -fit.exponential$coefficients[-1]
+  weibull_beta = -fit.weibull$coefficients[-1] / fit.weibull$scale
+  cox_beta = fit.cox$coefficients[1]
+  
+  tibble(
+    exp_beta=exp_beta,
+    weibull_beta=weibull_beta,
+    cox_beta=cox_beta
+  )
+ 
+}
+```
+
+```{r}
+sim_survival=function(N){
+  
+data = generate_data(N, beta = 4, distribution = "exponential", lambda = 0.1, gamma = 4, alpha = 4)
+
+  # Fit three survival distributions
+  fit.exponential = survreg(Surv(data$observed_time) ~ data$x, dist = "exponential") 
+  fit.weibull = survreg(Surv(data$observed_time) ~ data$x, dist = "weibull")
+  fit.cox = coxph(Surv(data$observed_time) ~ data$x) 
+  
+  # Save beta coefficients 
+  exp_beta = -fit.exponential$coefficients[-1]
+  weibull_beta = -fit.weibull$coefficients[-1] / fit.weibull$scale
+  cox_beta = fit.cox$coefficients[1]
+  
+  tibble(
+    exp_beta=exp_beta,
+    weibull_beta=weibull_beta,
+    cox_beta=cox_beta
+  )
+ 
+}
+```
+
+```{r}
+sim_results_nocensored = 
+  tibble(sample_size = seq(100,500,by=20)) %>% 
+  mutate(
+    output_list=map(.x=sample_size, ~rerun(n_circle,sim_survival(N=.x))),
+    output_df=map(output_list,bind_rows)) %>% 
+  select(-output_list) %>% 
+  unnest()
+
+
+sim_results_censored = 
+  tibble(sample_size = seq(100,500,by=20)) %>% 
+  mutate(
+    output_list=map(.x=sample_size, ~rerun(n_circle,sim_survival_censored(N=.x))),
+    output_df=map(output_list,bind_rows)) %>% 
+  select(-output_list) %>% 
+  unnest()
+   
+```
+
+```{r}    
+mse_sim=function(x){
+  c=0
+  for(i in 1:1000){
+ c=mean((x[i]-4)^2)
+return(c)
+  }
+}
+
+bias_sim=function(x){
+  d=0
+  for(i in 1:1000){
+d=mean((x[i]-4))
+return(d)
+  }
+}
+```
+
+
+exp_data_nocen=sim_results_nocensored %>% 
+  select(sample_size,exp_beta)%>% 
+  group_by(sample_size) %>% 
+  summarize(beta_mean = mean(exp_beta),
+            beta_var = var(exp_beta),
+             beta_MSE = mse_sim(exp_beta),
+            beta_bias=bias_sim(exp_beta))
+
+exp_data_cen=sim_results_censored%>% 
+  select(sample_size,exp_beta)%>% 
+  group_by(sample_size) %>% 
+  summarize(beta_mean = mean(exp_beta),
+            beta_var = var(exp_beta),
+             beta_MSE = mse_sim(exp_beta),
+            beta_bias=bias_sim(exp_beta))
+
+
+weibull_data_nocen=sim_results_nocensored %>% 
+  select(sample_size,weibull_beta)%>% 
+  group_by(sample_size) %>% 
+  summarize(beta_mean = mean(weibull_beta),
+            beta_var = var(weibull_beta),
+             beta_MSE = mse_sim(weibull_beta),
+            beta_bias=bias_sim(weibull_beta))
+
+weibull_data_cen=sim_results_censored%>% 
+  select(sample_size,weibull_beta)%>% 
+  group_by(sample_size) %>% 
+  summarize(beta_mean = mean(weibull_beta),
+            beta_var = var(weibull_beta),
+             beta_MSE = mse_sim(weibull_beta),
+            beta_bias=bias_sim(weibull_beta))
+
+
+cox_data_noncen=sim_results_nocensored %>% 
+  select(sample_size,cox_beta) %>% 
+  group_by(sample_size) %>% 
+  summarize(beta_mean = mean(cox_beta),
+            beta_var = var(cox_beta) ,
+            beta_MSE = mse_sim(cox_beta),
+            beta_bias=bias_sim(cox_beta))
+
+cox_data_cen=sim_results_censored %>% 
+  select(sample_size,cox_beta) %>% 
+  group_by(sample_size) %>% 
+  summarize(beta_mean = mean(cox_beta),
+            beta_var = var(cox_beta) ,
+            beta_MSE = mse_sim(cox_beta),
+            beta_bias=bias_sim(cox_beta))
+
+exp_data_nocen=exp_data_nocen %>% 
+  mutate(
+    type="exp"
+  )
+weibull_data_nocen=weibull_data_nocen %>% 
+  mutate(
+    type="weibull"
+  )
+
+cox_data_nocen=cox_data_nocen %>% 
+  mutate(
+    type="cox"
+  )
+
+exp_data_cen=exp_data_cen %>% 
+  mutate(
+    type="exp"
+  )
+weibull_data_cen=weibull_data_cen %>% 
+  mutate(
+    type="weibull"
+  )
+
+cox_data_cen=cox_data_cen %>% 
+  mutate(
+    type="cox"
+  )
+
+
+total_noncen=bind_rows(exp_data_nocen,weibull_data_nocen,cox_data_noncen)
+total_cen=bind_rows(exp_data_cen,weibull_data_cen,cox_data_cen)
+
+## mse line
+mes_non=ggplot(data=total_noncen,aes(x=sample_size,y=beta_MSE,color=type))+geom_line()+labs(title="MSE change with sample size(non-censored)")
+
+mes_cen=ggplot(data=total_cen,aes(x=sample_size,y=beta_MSE,color=type))+geom_line()+labs(title="MSE change with sample size(cencored)")
+
+mes_non+mes_cen
+
+## boxplot of mse when sample size is 500
+
+box_plot_data_noncen=sim_results_nocensored %>% filter(sample_size==500) %>% 
+   pivot_longer(
+    exp_beta:cox_beta,
+    names_to=("type"),
+    values_to = ("beta"))
+
+box_plot_data_cen=sim_results_censored %>% filter(sample_size==500) %>% 
+   pivot_longer(
+    exp_beta:cox_beta,
+    names_to=("type"),
+    values_to = ("beta"))
+
+
+box1=ggplot(data=box_plot_data_noncen,aes(x=type,y=beta,color=type))+geom_boxplot()+labs(title="beta distribution among three models when sample size=500")
+
+box2=ggplot(data=box_plot_data_cen,aes(x=type,y=beta,color=type))+geom_boxplot()+labs(title="beta distribution among three models when sample size=500")
+
+box1+box2
+
+## bias
+bias1=ggplot(data=total_noncen,aes(x=sample_size,y=beta_bias,color=type))+geom_line()+labs(title="Bias change with sample size")
+
+bias2=ggplot(data=total_cen,aes(x=sample_size,y=beta_bias,color=type))+geom_line()+labs(title="Bias change with sample size")
+
+bias1+bias2
+
