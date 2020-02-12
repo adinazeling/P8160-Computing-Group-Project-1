@@ -48,7 +48,7 @@ data = generate_data(N, beta, distribution = "exponential", lambda = 0.1, gamma 
 
 
 ```{r}
-set.seed(12345)
+set.seed(1234)
 sim_survival=function(N,beta){
   
 data = generate_data(N, beta, distribution = "exponential", lambda = 0.1, gamma = 4, alpha = 4)
@@ -131,8 +131,9 @@ results_plot=results_mod %>% group_by(sample_size,censored,type) %>%
 
 ```{r}
 ggplot(data=results_plot,aes(x=sample_size,y=beta_MSE,color=type))+
-geom_line(size=0.1)+
-  facet_grid(.~censored) +
+ geom_point() +
+  geom_line(size = 1, se = FALSE) +
+  facet_grid(.~censored, scales = "free_y") +
   labs(title = "Sample size vs MSE by Survival Model",
        x = "Sample Size",
        y = "MSE") +
@@ -144,12 +145,94 @@ geom_line(size=0.1)+
 
 
 ggplot(data=results_plot,aes(x=sample_size,y=beta_bias,color=type))+
-geom_line()+labs(title="Bias change with sample size")+
-  facet_grid(.~censored)
+geom_point() +
+  geom_line(size = 1, se = FALSE) +
+  facet_grid(.~censored, scales = "free_y") +
+  labs(title = "Sample size vs MSE by Survival Model",
+       x = "Sample Size",
+       y = "MSE") +
+  theme_bw() + 
+  theme(strip.text.x = element_text(size = 12)) + 
+  theme(text = element_text(size = 10),
+        legend.text=element_text(size = 10))
 
 
 ```
 
 
+```{r}
+## beta
+set.seed(1234)
+sim_betachange= 
+  tibble(beta_size = c(0.1, 0.5, 1, 3, 5, 6)) %>% 
+  mutate(
+    output_list=map(.x=beta_size, ~rerun(n_circle,sim_survival(N=500,beta=.x))),
+    output_df=map(output_list,bind_rows),
+    output_list1=map(.x=beta_size, ~rerun(n_circle,sim_survival_censored(N=500,beta=.x))),
+    output_df1=map(output_list1,bind_rows)) %>% 
+  select(-output_list,-output_list1) %>% 
+  unnest()
+
+e=sim_betachange%>% select(beta_size,exp_beta,weibull_beta,cox_beta) %>% 
+  mutate(
+    censored="uncensored"
+  )
+
+f=sim_betachange %>% select(beta_size,exp_beta_c,weibull_beta_c,cox_beta_c) %>% 
+  mutate(
+    censored="censored",
+  ) %>% 
+  rename(exp_beta=exp_beta_c,weibull_beta=weibull_beta_c,cox_beta=cox_beta_c)
+
+betachange_results=bind_rows(e,f) %>% mutate(
+  censored=as.factor(censored)
+)
+```
+
+```{r}
+betachange_results_mod=betachange_results %>% 
+  pivot_longer(
+    exp_beta:cox_beta,
+    names_to=("type"),
+    values_to = ("beta")
+  )
+
+beta_results_plot=betachange_results_mod %>% group_by(beta_size,censored,type) %>% 
+  summarize(beta_mean = mean(beta),
+            beta_var = var(beta),
+             beta_MSE = mse_sim(beta),
+            beta_bias=bias_sim(beta)) %>% ungroup()
+```
+
+
+```{r}
+ggplot(data=beta_results_plot,aes(x=beta_size,y=beta_MSE,color=type))+
+ geom_point() +
+  geom_line(size = 1, se = FALSE) +
+  facet_grid(.~censored, scales = "free_y") +
+  labs(title = "Beta vs MSE by Survival Model",
+       x = "Beta",
+       y = "MSE") +
+  theme_bw() + 
+  theme(strip.text.x = element_text(size = 12)) + 
+  theme(text = element_text(size = 10),
+        legend.text=element_text(size = 10))
+
+
+
+ggplot(data=beta_results_plot,aes(x=beta_size,y=beta_bias,color=type))+
+geom_point() +
+  geom_line(size = 1, se = FALSE) +
+  facet_grid(.~censored, scales = "free_y") +
+  labs(title = "Beta vs Bias by Survival Model",
+       x = "Beta",
+       y = "Bias") +
+  theme_bw() + 
+  theme(strip.text.x = element_text(size = 12)) + 
+  theme(text = element_text(size = 10),
+        legend.text=element_text(size = 10))
+
+
+```
 
 
