@@ -1,0 +1,153 @@
+---
+title: "failed code from sibei"
+author: "Sibei Liu"
+date: "2020/2/11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = F,message = F)
+require(survival)
+library(broom)
+library(tidyverse)
+library(patchwork)
+source("./sim.R")
+```
+
+```{r}
+
+ #data generate
+
+n_circle=1000
+
+sim_survival_censored=function(N,beta){
+  
+data = generate_data(N, beta, distribution = "exponential", lambda = 0.1, gamma = 4, alpha = 4)
+
+  # Fit three survival distributions
+  fit.exponential = survreg(Surv(data$observed_time,data$status) ~ data$x, dist = "exponential") 
+  fit.weibull = survreg(Surv(data$observed_time,data$status) ~ data$x, dist = "weibull")
+  fit.cox = coxph(Surv(data$observed_time,data$status) ~ data$x) 
+  
+  # Save beta coefficients 
+  exp_beta = -fit.exponential$coefficients[-1]
+  weibull_beta = -fit.weibull$coefficients[-1] / fit.weibull$scale
+  cox_beta = fit.cox$coefficients[1]
+  
+  tibble(
+    exp_beta_c=exp_beta,
+    weibull_beta_c=weibull_beta,
+    cox_beta_c=cox_beta
+  )
+ 
+}
+
+```
+
+
+```{r}
+set.seed(12345)
+sim_survival=function(N,beta){
+  
+data = generate_data(N, beta, distribution = "exponential", lambda = 0.1, gamma = 4, alpha = 4)
+
+  # Fit three survival distributions
+  fit.exponential = survreg(Surv(data$observed_time) ~ data$x, dist = "exponential") 
+  fit.weibull = survreg(Surv(data$observed_time) ~ data$x, dist = "weibull")
+  fit.cox = coxph(Surv(data$observed_time) ~ data$x) 
+  
+  # Save beta coefficients 
+  exp_beta = -fit.exponential$coefficients[-1]
+  weibull_beta = -fit.weibull$coefficients[-1] / fit.weibull$scale
+  cox_beta = fit.cox$coefficients[1]
+  
+  tibble(
+    exp_beta=exp_beta,
+    weibull_beta=weibull_beta,
+    cox_beta=cox_beta
+  )
+ 
+}
+
+sim_results= 
+  tibble(sample_size = c(100, 150, 200, 250, 300, 350, 400, 450, 500)) %>% 
+  mutate(
+    output_list=map(.x=sample_size, ~rerun(n_circle,sim_survival(N=.x,beta=4))),
+    output_df=map(output_list,bind_rows),
+    output_list1=map(.x=sample_size, ~rerun(n_circle,sim_survival_censored(N=.x,beta=4))),
+    output_df1=map(output_list1,bind_rows)) %>% 
+  select(-output_list,-output_list1) %>% 
+  unnest()
+
+a=sim_results %>% select(sample_size,exp_beta,weibull_beta,cox_beta) %>% 
+  mutate(
+    censored="uncensored"
+  )
+
+b=sim_results %>% select(sample_size,exp_beta_c,weibull_beta_c,cox_beta_c) %>% 
+  mutate(
+    censored="censored",
+  ) %>% 
+  rename(exp_beta=exp_beta_c,weibull_beta=weibull_beta_c,cox_beta=cox_beta_c)
+
+results_final=bind_rows(a,b) %>% mutate(
+  censored=as.factor(censored)
+)
+```
+
+```{r}    
+mse_sim=function(x){
+  c=0
+  for(i in 1:n_circle){
+ d=(x[i]-4)^2
+ c=c+d
+  }
+  c=c/n_circle
+return(c)
+}
+
+bias_sim=function(x){
+d=mean((x-4))
+return(d)
+  }
+```
+
+```{r}
+results_mod=results_final %>% 
+  pivot_longer(
+    exp_beta:cox_beta,
+    names_to=("type"),
+    values_to = ("beta")
+  )
+
+results_plot=results_mod %>% group_by(sample_size,censored,type) %>% 
+  summarize(beta_mean = mean(beta),
+            beta_var = var(beta),
+             beta_MSE = mse_sim(beta),
+            beta_bias=bias_sim(beta)) %>% ungroup()
+```
+
+```{r}
+ggplot(data=results_plot,aes(x=sample_size,y=beta_MSE,color=type))+
+geom_line(size=0.1)+
+  facet_grid(.~censored) +
+  labs(title = "Sample size vs MSE by Survival Model",
+       x = "Sample Size",
+       y = "MSE") +
+  theme_bw() + 
+  theme(strip.text.x = element_text(size = 12)) + 
+  theme(text = element_text(size = 10),
+        legend.text=element_text(size = 10))
+
+
+
+ggplot(data=results_plot,aes(x=sample_size,y=beta_bias,color=type))+
+geom_line()+labs(title="Bias change with sample size")+
+  facet_grid(.~censored)
+
+
+```
+
+
+
+
