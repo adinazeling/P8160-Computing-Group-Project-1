@@ -15,6 +15,7 @@ source("./sim.R")
 ```
 
 
+
 ```{r}
 
  #data generate
