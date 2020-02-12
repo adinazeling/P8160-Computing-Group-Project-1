@@ -93,12 +93,14 @@ sim_results =
   mutate(
     output_uncensored = map(.x = sample_size, ~simulate(sim = 1000, N = .x, beta = 4)$performance),
     output_censored = map(.x = sample_size, ~simulate(sim = 1000, N = .x, beta = 4, censor = TRUE)$performance),
+    beta_uncensored = map(.x = sample_size, ~simulate(sim = 1000, N = .x, beta = 4)$coefficients),
+    beta_censored = map(.x = sample_size, ~simulate(sim = 1000, N = .x, beta = 4, censor = TRUE)$coefficients),
     output_uncensored = map(.x = output_uncensored, ~mutate(.x, censor = FALSE)),
     output_censored = map(.x = output_censored, ~mutate(.x, censor = TRUE))) 
 
 # Join censored and uncensored data
-temp1 = sim_results %>% unnest(output_uncensored) %>% select(-output_censored)
-temp2 = sim_results %>% unnest(output_censored) %>% select(-output_uncensored)
+temp1 = sim_results %>% unnest(output_uncensored) %>% select(-beta_uncensored:output_censored)
+temp2 = sim_results %>% unnest(output_censored) %>% select(-beta_uncensored:output_uncensored)
 samp_size_sim = rbind(temp1, temp2)
 
 # Plot MSE simulation results
