@@ -18,11 +18,11 @@ source("./sim.R")
 set.seed(123123)
  #data generate
 
-n_circle=1000
+n_circle=10
 
-sim_survival_censored=function(N){
+sim_survival_censored=function(N,beta){
   
-data = generate_data(N, beta = 4, distribution = "exponential", lambda = 0.1, gamma = 4, alpha = 4)
+data = generate_data(N, beta, distribution = "exponential", lambda = 0.1, gamma = 4, alpha = 4)
 
   # Fit three survival distributions
   fit.exponential = survreg(Surv(data$observed_time,data$status) ~ data$x, dist = "exponential") 
@@ -45,9 +45,9 @@ data = generate_data(N, beta = 4, distribution = "exponential", lambda = 0.1, ga
 
 
 ```{r}
-sim_survival=function(N){
+sim_survival=function(N,beta){
   
-data = generate_data(N, beta = 4, distribution = "exponential", lambda = 0.1, gamma = 4, alpha = 4)
+data = generate_data(N, beta, distribution = "exponential", lambda = 0.1, gamma = 4, alpha = 4)
 
   # Fit three survival distributions
   fit.exponential = survreg(Surv(data$observed_time) ~ data$x, dist = "exponential") 
@@ -70,11 +70,13 @@ data = generate_data(N, beta = 4, distribution = "exponential", lambda = 0.1, ga
 
 ```{r}
 sim_results_nocensored = 
-  tibble(sample_size = seq(100,500,by=20)) %>% 
+  tibble(sample_size = seq(10,50,by=10)) %>% 
   mutate(
     output_list=map(.x=sample_size, ~rerun(n_circle,sim_survival(N=.x))),
-    output_df=map(output_list,bind_rows)) %>% 
-  select(-output_list) %>% 
+    output_df=map(output_list,bind_rows),
+    output_list1=map(.x=sample_size, ~rerun(n_circle,sim_survival_censored(N=.x))),
+    output_df1=map(output_list,bind_rows)) %>% 
+  select(-output_list,--output_list1) %>% 
   unnest()
 
 
