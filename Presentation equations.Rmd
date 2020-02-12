@@ -1,0 +1,31 @@
+---
+title: "Presentation functions"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+$$h(t|x) = h_{0}(t)e^{x^{T}\beta}$$
+$$Given \ S(t|x) = e^{-H(t)}\ , \ then\ S(t|x) = e^{-H_{0}(t)e^{x^{T}\beta}}$$
+
+Use inverse transformation method to obtain T
+$$ U = S(t|x) = e^{-H_{0}(t)e^{x^{T}\beta}}$$
+$$T = H_{0}^{-1}(t)\bigg(\cfrac{-log(U)}{e^{x^{T}\beta}}\bigg), \ U \sim U(0,1)$$
+
+$$X \sim Bernoulli(0.5)$$
+$$T = H_{0}^{-1}(t)\bigg(\cfrac{-log(U)}{e^{x^{T}\beta}}\bigg)$$
+$$Censored\ time \sim exponential(\lambda)$$
+$$\begin{equation}
+    Status = 
+    \begin{cases}
+      1, & time\ to \ event < censored \ time \\
+      0, &  ime\ to \ event > censored \ time
+    \end{cases}
+  \end{equation}
+  $$
+  
+$$Observed \ time = min(time \ to \ event, censored \ time)$$
+  
+  
