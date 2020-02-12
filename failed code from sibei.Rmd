@@ -43,6 +43,7 @@ data = generate_data(N, beta = 4, distribution = "exponential", lambda = 0.1, ga
 }
 ```
 
+
 ```{r}
 sim_survival=function(N){
   
