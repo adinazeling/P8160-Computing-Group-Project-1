@@ -106,7 +106,7 @@ cox_data=cox_data %>%
 total=bind_rows(exp_data,weibull_data,cox_data)
 
 ## mse line
-ggplot(data=total,aes(x=sample_size,y=beta_MSE,color=type))+geom_smooth(se=FALSE)+labs(title="MSE change with sample size")
+ggplot(data=total,aes(x=sample_size,y=beta_MSE,color=type))+geom_line()+labs(title="MSE change with sample size")
 
 ## boxplot of mse when sample size is 500
 
@@ -121,7 +121,7 @@ ggplot(data=box_plot_data,aes(x=type,y=beta,color=type))+geom_boxplot()+labs(tit
 
 
 ## 
-ggplot(data=total,aes(x=sample_size,y=beta_bias,color=type))+geom_smooth(se=FALSE)+labs(title="Bias change with sample size")
+ggplot(data=total,aes(x=sample_size,y=beta_bias,color=type))+geom_line()+labs(title="Bias change with sample size")
 
 ```
 
