@@ -109,7 +109,17 @@ cox_data=cox_data %>%
 total=bind_rows(exp_data,weibull_data,cox_data)
 
 ## mse line
-ggplot(data=total,aes(x=sample_size,y=beta_MSE,color=type))+geom_line()+labs(title="MSE change with sample size")
+mse_weibull <- ggplot(data=total,aes(x=sample_size,y=beta_MSE,color=type))+
+  geom_line(size = 1)+
+  labs(title="MSE change with sample size",
+       y = "MSE of beta",
+       x = "Sample size")+
+  theme_light()
+mse_weibull
+
+## smooth line of mse
+ggplot(data=total,aes(x=sample_size,y=beta_MSE,color=type))+
+  geom_smooth(se = F, method = "loess")+labs(title="MSE change with sample size")
 
 ## boxplot of mse when sample size is 500
 
@@ -120,7 +130,10 @@ box_plot_data=sim_results %>% filter(sample_size==500) %>%
     values_to = ("beta"))
 
 
-ggplot(data=box_plot_data,aes(x=type,y=beta,color=type))+geom_boxplot()+labs(title="beta distribution among three models when sample size=500")
+ggplot(data=box_plot_data,aes(x=type,y=beta,color=type))+
+  geom_boxplot()+
+  labs(title="beta distribution among three models when sample size=500") +
+  theme_light()
 
 
   
