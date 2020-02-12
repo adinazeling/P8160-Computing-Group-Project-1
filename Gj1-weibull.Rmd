@@ -19,6 +19,7 @@ source("./sim.R")
 
 ```{r}
 ## generate the data of weibull
+set.seed(031369)
 sim_survival=function(N){
   
 data = generate_data(N = 500, beta = 4, distribution = "weibull", lambda = 0.1, gamma = 4, alpha = 4)
@@ -53,16 +54,16 @@ sim_results =
 
 mse_sim=function(x){
   c=0
-  for(i in 1:100){
-c=sum((x[i]-4)^2)/100
+  for(i in 1:1000){
+c=sum((x[i]-4)^2)/1000
 return(c)
   }
 }
 
 bias_sim=function(x){
   d=0
-  for(i in 1:100){
-d=sum((x[i]-4))/100
+  for(i in 1:1000){
+d=sum((x[i]-4))/1000
 return(d)
   }
 }
@@ -119,7 +120,8 @@ mse_weibull
 
 ## smooth line of mse
 ggplot(data=total,aes(x=sample_size,y=beta_MSE,color=type))+
-  geom_smooth(se = F, method = "loess")+labs(title="MSE change with sample size")
+  geom_smooth(se = F, method = "loess")+labs(title="MSE change with sample size") +
+  theme_light()
 
 ## boxplot of mse when sample size is 500
 
