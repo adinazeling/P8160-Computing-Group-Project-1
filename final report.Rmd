@@ -1,0 +1,28 @@
+---
+title: 'Project 1: A simulation study examining three survival models'
+author: "Adina Zhang"
+date: "2/13/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(survival)
+source("./sim.R")
+```
+
+## Introduction
+
+
+## Methods
+
+### Data Generation
+
+### Scenario Simiulation
+
+## Results
+
+## Discussion
+
+
