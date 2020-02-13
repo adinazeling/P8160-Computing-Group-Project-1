@@ -14,7 +14,7 @@ source("./sim.R")
 
 ```{r, message = FALSE, warning = FALSE}
 # Write a function for simulations
-simulate = function(sim, N, beta, censor = FALSE) {
+simulate = function(sim, N, beta, censor = FALSE, dist = "exponential") {
   # Set up coefficient vectors
   exp_beta = rep(NA, sim)
   weibull_beta = rep(NA, sim)
@@ -25,7 +25,7 @@ simulate = function(sim, N, beta, censor = FALSE) {
     
     for (i in 1:sim) {
       # Generate data
-      data = generate_data(N, beta, distribution = "exponential", 
+      data = generate_data(N, beta, distribution = dist, 
                            lambda = 0.1, gamma = 4, alpha = 4)
       # Fit three survival distributions
       fit.exponential = survreg(Surv(data$observed_time, data$status) ~ data$x, dist = "exponential") 
@@ -91,16 +91,15 @@ set.seed(12345)
 sim_results = 
   tibble(sample_size = c(100, 150, 200, 250, 300, 350, 400, 450, 500)) %>% 
   mutate(
-    output_uncensored = map(.x = sample_size, ~simulate(sim = 10, N = .x, beta = 4)$performance),
-    output_censored = map(.x = sample_size, ~simulate(sim = 10, N = .x, beta = 4, censor = TRUE)$performance),
-    beta_uncensored = map(.x = sample_size, ~simulate(sim = 10, N = .x, beta = 4)$coefficients),
-    beta_censored = map(.x = sample_size, ~simulate(sim = 10, N = .x, beta = 4, censor = TRUE)$coefficients),
+    output_uncensored = map(.x = sample_size, ~simulate(sim = 10, N = .x, beta = 4, dist = "cox")$performance),
+    output_censored = map(.x = sample_size, 
+                          ~simulate(sim = 10, N = .x, beta = 4, dist = "cox", censor = TRUE)$performance),
     output_uncensored = map(.x = output_uncensored, ~mutate(.x, censor = FALSE)),
     output_censored = map(.x = output_censored, ~mutate(.x, censor = TRUE))) 
 
 # Join censored and uncensored data
-temp1 = sim_results %>% unnest(output_uncensored) %>% select(-beta_uncensored:output_censored)
-temp2 = sim_results %>% unnest(output_censored) %>% select(-beta_uncensored:output_uncensored)
+temp1 = sim_results %>% unnest(output_uncensored) %>% select(-output_censored)
+temp2 = sim_results %>% unnest(output_censored) %>% select(-output_uncensored)
 samp_size_sim = rbind(temp1, temp2)
 
 # Plot MSE simulation results
