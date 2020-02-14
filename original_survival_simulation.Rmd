@@ -51,7 +51,7 @@ generate_data = function(N, beta, distribution, lambda, gamma, alpha) {
 
   # follow-up times and event indicators
   observed_time = pmin(time, C)
-  status = 1 * (time >= C)
+  status = 1 * (time <= C)
 
   # data set
   survival_data = data.frame(id = 1:N,
@@ -68,7 +68,7 @@ Function to run model then obtain performance measures
 
 obtain_performance = function(baseline_hazard, censor) {
   
-  size_vector = c(350, 400, 450, 500)
+  size_vector = c(100, 200, 300, 350, 400, 450, 500)
   sim = 1000
 
   exp_bias = rep(NA, length(size_vector))
@@ -131,38 +131,40 @@ Scenario 1: Exponential baseline hazard
 ```{r}
 
 #uncensored
-performance = obtain_performance(baseline_hazard = "weibull", censor = "FALSE")
+uncens_performance = obtain_performance(baseline_hazard = "exponential", censor = "FALSE")
 
-min_bias = min(performance$exp_bias, performance$weibull_bias, performance$cox_bias)
-max_bias = max(performance$exp_bias, performance$weibull_bias, performance$cox_bias)
+min_bias = min(uncens_performance$exp_bias, uncens_performance$weibull_bias, uncens_performance$cox_bias)
+max_bias = max(uncens_performance$exp_bias, uncens_performance$weibull_bias, uncens_performance$cox_bias)
 
-plot(performance$exp_bias, ylim = c(min_bias, max_bias), main = "Sample size vs. Bias without Censoring")
-lines(performance$cox_bias, col = "red")
-lines(performance$weibull_bias, col = "blue")
+plot(uncens_performance$exp_bias, ylim = c(min_bias, max_bias), main = "Sample size vs. Bias without Censoring")
+lines(uncens_performance$cox_bias, col = "red")
+lines(uncens_performance$weibull_bias, col = "blue")
 
-min_MSE = min(performance$exp_MSE, performance$weibull_MSE, performance$cox_MSE)
-max_MSE = max(performance$exp_MSE, performance$weibull_MSE, performance$cox_MSE)
+min_MSE = min(uncens_performance$exp_MSE, uncens_performance$weibull_MSE, uncens_performance$cox_MSE)
+max_MSE = max(uncens_performance$exp_MSE, uncens_performance$weibull_MSE, uncens_performance$cox_MSE)
 
-plot(performance$exp_MSE, ylim = c(min_MSE, max_MSE), main = "Sample size vs. MSE without Censoring")
-lines(performance$cox_MSE, col = "red")
-lines(performance$weibull_MSE, col = "blue")
+plot(uncens_erformance$exp_MSE, ylim = c(min_MSE, max_MSE), main = "Sample size vs. MSE without Censoring")
+lines(uncens_performance$cox_MSE, col = "red")
+lines(uncens_performance$weibull_MSE, col = "blue")
+
+################################################
 
 #censored
-performance = obtain_performance(baseline_hazard = "weibull", censor = "TRUE")
+cens_performance = obtain_performance(baseline_hazard = "exponential", censor = "TRUE")
 
-min_bias = min(performance$exp_bias, performance$weibull_bias, performance$cox_bias)
-max_bias = max(performance$exp_bias, performance$weibull_bias, performance$cox_bias)
+min_bias = min(cens_performance$exp_bias, cens_performance$weibull_bias, cens_performance$cox_bias)
+max_bias = max(cens_performance$exp_bias, cens_performance$weibull_bias, cens_performance$cox_bias)
 
-plot(performance$exp_bias, main = "Sample size vs. Bias with Censoring")
-lines(performance$cox_bias, col = "red")
-lines(performance$weibull_bias, col = "blue")
+plot(cens_performance$exp_bias, ylim = c(min_bias, max_bias), main = "Sample size vs. Bias with Censoring")
+lines(cens_performance$cox_bias, col = "red")
+lines(cens_performance$weibull_bias, col = "blue")
 
-min_MSE = min(performance$exp_MSE, performance$weibull_MSE, performance$cox_MSE)
-max_MSE = max(performance$exp_MSE, performance$weibull_MSE, performance$cox_MSE)
+min_MSE = min(cens_performance$exp_MSE, cens_performance$weibull_MSE, cens_performance$cox_MSE)
+max_MSE = max(cens_performance$exp_MSE, cens_performance$weibull_MSE, cens_performance$cox_MSE)
 
-plot(performance$exp_MSE, main = "Sample size vs. MSE with Censoring")
-lines(performance$cox_MSE, col = "red")
-lines(performance$weibull_MSE, col = "blue")
+plot(cens_performance$exp_MSE, ylim = c(min_MSE, max_MSE), main = "Sample size vs. MSE with Censoring")
+lines(cens_performance$cox_MSE, col = "red")
+lines(cens_performance$weibull_MSE, col = "blue")
 
 ```
 
