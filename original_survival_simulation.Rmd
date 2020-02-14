@@ -68,8 +68,8 @@ Function to run model then obtain performance measures
 
 obtain_performance = function(baseline_hazard, censor) {
   
-  size_vector = c(150, 200, 250, 300, 350, 400, 450, 500)
-  sim = 1000
+  size_vector = c(150, 200, 250, 300)
+  sim = 500
 
   exp_bias = rep(NA, length(size_vector))
   weibull_bias = rep(NA, length(size_vector))
@@ -129,6 +129,7 @@ obtain_performance = function(baseline_hazard, censor) {
 Scenario 1: Exponential baseline hazard
 
 ```{r}
+set.seed(123123)
 
 #uncensored
 uncens_performance = obtain_performance(baseline_hazard = "exponential", censor = "FALSE")
@@ -136,14 +137,14 @@ uncens_performance = obtain_performance(baseline_hazard = "exponential", censor 
 min_bias = min(uncens_performance$exp_bias, uncens_performance$weibull_bias, uncens_performance$cox_bias)
 max_bias = max(uncens_performance$exp_bias, uncens_performance$weibull_bias, uncens_performance$cox_bias)
 
-plot(uncens_performance$exp_bias, ylim = c(min_bias, max_bias), main = "Sample size vs. Bias without Censoring")
+plot(uncens_performance$exp_bias, ylim = c(min_bias, max_bias), main = "Sample size vs. Bias without Exponential Censoring")
 lines(uncens_performance$cox_bias, col = "red")
 lines(uncens_performance$weibull_bias, col = "blue")
 
 min_MSE = min(uncens_performance$exp_MSE, uncens_performance$weibull_MSE, uncens_performance$cox_MSE)
 max_MSE = max(uncens_performance$exp_MSE, uncens_performance$weibull_MSE, uncens_performance$cox_MSE)
 
-plot(uncens_performance$exp_MSE, ylim = c(min_MSE, max_MSE), main = "Sample size vs. MSE without Censoring")
+plot(uncens_performance$exp_MSE, ylim = c(min_MSE, max_MSE), main = "Sample size vs. MSE without Exponential Censoring")
 lines(uncens_performance$cox_MSE, col = "red")
 lines(uncens_performance$weibull_MSE, col = "blue")
 
@@ -155,22 +156,25 @@ cens_performance = obtain_performance(baseline_hazard = "exponential", censor = 
 min_bias = min(cens_performance$exp_bias, cens_performance$weibull_bias, cens_performance$cox_bias)
 max_bias = max(cens_performance$exp_bias, cens_performance$weibull_bias, cens_performance$cox_bias)
 
-plot(cens_performance$exp_bias, ylim = c(min_bias, max_bias), main = "Sample size vs. Bias with Censoring")
+plot(cens_performance$exp_bias, ylim = c(min_bias, max_bias), main = "Sample size vs. Bias with Exponential Censoring")
 lines(cens_performance$cox_bias, col = "red")
 lines(cens_performance$weibull_bias, col = "blue")
 
 min_MSE = min(cens_performance$exp_MSE, cens_performance$weibull_MSE, cens_performance$cox_MSE)
 max_MSE = max(cens_performance$exp_MSE, cens_performance$weibull_MSE, cens_performance$cox_MSE)
 
-plot(cens_performance$exp_MSE, ylim = c(min_MSE, max_MSE), main = "Sample size vs. MSE with Censoring")
+plot(cens_performance$exp_MSE, ylim = c(min_MSE, max_MSE), main = "Sample size vs. MSE with Exponential Censoring")
 lines(cens_performance$cox_MSE, col = "red")
 lines(cens_performance$weibull_MSE, col = "blue")
+
+
 
 ```
 
 Scenario 2: Weibull baseline hazard
 
 ```{r}
+set.seed(123123)
 
 #uncensored
 uncens_performance = obtain_performance(baseline_hazard = "weibull", censor = "FALSE")
@@ -178,14 +182,14 @@ uncens_performance = obtain_performance(baseline_hazard = "weibull", censor = "F
 min_bias = min(uncens_performance$exp_bias, uncens_performance$weibull_bias, uncens_performance$cox_bias)
 max_bias = max(uncens_performance$exp_bias, uncens_performance$weibull_bias, uncens_performance$cox_bias)
 
-plot(uncens_performance$exp_bias, ylim = c(min_bias, max_bias), main = "Sample size vs. Bias without Censoring")
+plot(uncens_performance$exp_bias, ylim = c(min_bias, max_bias), main = "Sample size vs. Bias without Weibull Censoring")
 lines(uncens_performance$cox_bias, col = "red")
 lines(uncens_performance$weibull_bias, col = "blue")
 
 min_MSE = min(uncens_performance$exp_MSE, uncens_performance$weibull_MSE, uncens_performance$cox_MSE)
 max_MSE = max(uncens_performance$exp_MSE, uncens_performance$weibull_MSE, uncens_performance$cox_MSE)
 
-plot(uncens_performance$exp_MSE, ylim = c(min_MSE, max_MSE), main = "Sample size vs. MSE without Censoring")
+plot(uncens_performance$exp_MSE, ylim = c(min_MSE, max_MSE), main = "Sample size vs. MSE without Weibull Censoring")
 lines(uncens_performance$cox_MSE, col = "red")
 lines(uncens_performance$weibull_MSE, col = "blue")
 
@@ -197,16 +201,18 @@ cens_performance = obtain_performance(baseline_hazard = "weibull", censor = "TRU
 min_bias = min(cens_performance$exp_bias, cens_performance$weibull_bias, cens_performance$cox_bias)
 max_bias = max(cens_performance$exp_bias, cens_performance$weibull_bias, cens_performance$cox_bias)
 
-plot(cens_performance$exp_bias, ylim = c(min_bias, max_bias), main = "Sample size vs. Bias with Censoring")
+plot(cens_performance$exp_bias, ylim = c(min_bias, max_bias), main = "Sample size vs. Bias with Weibull Censoring")
 lines(cens_performance$cox_bias, col = "red")
 lines(cens_performance$weibull_bias, col = "blue")
 
 min_MSE = min(cens_performance$exp_MSE, cens_performance$weibull_MSE, cens_performance$cox_MSE)
 max_MSE = max(cens_performance$exp_MSE, cens_performance$weibull_MSE, cens_performance$cox_MSE)
 
-plot(cens_performance$exp_MSE, ylim = c(min_MSE, max_MSE), main = "Sample size vs. MSE with Censoring")
+plot(cens_performance$exp_MSE, ylim = c(min_MSE, max_MSE), main = "Sample size vs. MSE with Weibull Censoring")
 lines(cens_performance$cox_MSE, col = "red")
 lines(cens_performance$weibull_MSE, col = "blue")
+
+cens_performance = 
 
 ```
 
