@@ -177,7 +177,7 @@ From the results above, we generally conclude that using the correctly specified
 
 Further study can be carried on the following three aspects. Our study fixed the values of parameters. To extend the breadth of our conclusions, varied inputs of alpha, lambda and gamma should be implemented. Second, our study only includes one categorical covariable which was the treatment status. But in real life, other categorical and continuous variables like gender and age may also have influence on the survival time. Third, different censoring times can be generated under multiple distributions,  not only limited to exponential distribution. These distributions may also reflect strong versus weak censoring, in which data may experience many or few loss-to-followup.
 
-\next page
+\newpage
 
 ## Appendix
 
