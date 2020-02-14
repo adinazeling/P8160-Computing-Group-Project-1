@@ -74,6 +74,16 @@ All the data generation and simulation were performed in R version 3.6.1
 
 ### Association with Beta and MES(or Bias) among three scenarios
 
+$$
+Figure 1. Association\ \ between\;\; \beta \;\; and\;\; MSE\;\; among\;\; three \;\;scenarios\;\; in \;\;uncensored \;\;data\\(A: under \;\; exponential; B: under\;\; weibull ; C: under\;\; cox )
+$$
+
+
+$$Figure 2. Association\;\;between\;\; \beta \;\; and\;\; Bias\;\; among\;\; three \;\;scenarios\;\; in \;\;uncensored\;\; data \\(A: under \;\; exponential; B: under\;\; weibull ; C: under\;\; cox )$$
+
+From Figure 1, we observed in Scenario 1 that as the treatment effect ($\beta$) was varied the exponential model performed the best. The cox and Weibull model decreased in performance as MSE increased with increasing $\beta$. The performance of Weibull is between Exponential and Cox models. But generally, the increase of MSE under three models is still small with the greatest MSE at 0.16. Under the weibull scenario, the weibull and cox model performed the best. The MSE is nearly 0 for all treatment effects between these two models. The exponential model performed poorly with a larger treatment effect. Under the unspecified Gompertz scenario, the Cox model performs the best. Meanwhile, weibull and exponential had an increased MSE as treatment effect increased with exponential performing the worst.
+
+In Figure 2, the bias trends among three scenarios are similar to those of MSE. Under the exponential scenario, with varied beta, the exponential performs well in keeping bias low whereas Cox and Weibull models perform worse with larger betas. In the Weibull scenario, both Cox and Weibull models perform well with keeping bias low. However, the exponential model increasingly underestimates the treatment effect as it becomes larger. With the unspecified hazard function model, the Cox model shows great performance with different treatment effects. Weibull and exponential models decrease in performance as treatment effects become larger as the bias deviates further from 0. 
 
 
 ### Association with sample size and MSE(or Bias) among three scenarios
