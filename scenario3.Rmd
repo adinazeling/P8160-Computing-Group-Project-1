@@ -25,7 +25,7 @@ simulate = function(sim, N, beta, censor = FALSE) {
     
     for (i in 1:sim) {
       # Generate data
-      data = generate_data(N, beta, distribution = "cox", 
+      data = generate_data(N, beta, distribution = "weibull", 
                            lambda = 0.1, gamma = 4, alpha = 4)
       # Fit three survival distributions
       fit.exponential = survreg(Surv(data$observed_time, data$status) ~ data$x, dist = "exponential") 
@@ -43,7 +43,7 @@ simulate = function(sim, N, beta, censor = FALSE) {
     
     for (i in 1:sim) {
       # Generate data
-      data = generate_data(N, beta, distribution = "cox", 
+      data = generate_data(N, beta, distribution = "weibull", 
                            lambda = 0.1, gamma = 4, alpha = 4)
       # Fit three survival distributions
       fit.exponential = survreg(Surv(data$time) ~ data$x, dist = "exponential") 
@@ -153,7 +153,9 @@ beta_sim = rbind(temp1, temp2)
 # Plot MSE simulation results
 beta_sim %>% 
   #filter(beta != 6) %>% 
-  mutate(censor = factor(censor, labels = c("Uncensored", "Censored"))) %>% 
+  #mutate(censor = factor(censor, labels = c("Uncensored", "Censored"))) %>% 
+  filter(censor == FALSE)%>%
+  mutate(censor = ifelse(censor == FALSE, "Uncensored"))%>%
   ggplot(aes(x = beta, y = mse, color = model)) + 
   geom_point() +
   geom_line(size = 1) +
@@ -169,7 +171,9 @@ beta_sim %>%
 # Plot bias simulation results
 beta_sim %>% 
   #filter(beta != 6) %>% 
-  mutate(censor = factor(censor, labels = c("Uncensored", "Censored"))) %>% 
+  #mutate(censor = factor(censor, labels = c("Uncensored", "Censored"))) %>% 
+  filter(censor == FALSE)%>%
+  mutate(censor = ifelse(censor == FALSE, "Uncensored"))%>%
   ggplot(aes(x = beta, y = bias, color = model)) + 
   geom_point() +
   geom_line(size = 1) +

@@ -2,7 +2,7 @@
 title: 'Project 1: A simulation study examining three survival models'
 author: "Adina Zhang"
 date: "2/13/2020"
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -17,9 +17,11 @@ source("./sim.R")
 
 ## Methods
 
+### Data Generation
+
 Generating survival data involves 5 components: actual event time, censoring time, status indicator, observed time, and covariates, if needed. In order to generate event time, we can utilize the relationship between the survival function, $S(t)$, and hazard function $h(t)$ to obtain a direct relationship between the survival function, $S(t)$, and the baseline hazard function, $h_{0}(t)$. Survival function is the probability of surviving beyond time $t$
 $$S(t) = P(T > t) = 1 - F(t)$$
-Hazard function is the instantaneous rate at which the event occurs at time $t$ and be defined as 
+Hazard function is the instantaneous rate at which the event occurs at time $t$ and can be defined as 
 $$h(t) = \cfrac{f(t)}{S(t)} = \cfrac{f(t)}{1 - F(t)}
 = -\cfrac{\partial}{\partial y}log[1 - F(t)] 
 = -\cfrac{\partial}{\partial y}log[S(t)] $$
@@ -34,27 +36,62 @@ $$S(t) = e^{-H(t)}\\
 \ \ \ \ \ \ \ \ \ \ \ \ \ \  = e^{x^T \beta}H_{0}(t)$$
 Finally, utilize the inverse transformation method to obtain $T$, event time
 $$T = H^{-1}_{0} \bigg(\cfrac{-log(u)}{e^{x^T \beta}} \bigg), where\ U \sim U(0,1)$$
-Under each of the 3 scenarios, the following steps can be used to generate the dataset:
 
-1. Randomly generate $X_{i}$, treatment assignment variable, from a bernoulli distribution with $p = 0.5$
+With a specific baseline hazard function, it is straightfoward to find generate time to event
+\begin{enumerate}
+  \item Under exponential distribution:
+  \begin{center}
+  Baseline hazard function: $h_{0}(t) = \lambda, where\ \lambda > 0$
+  
+  Cumulative hazard function: $H_{0}(t) = \lambda t$
+  
+  Inverse cumulative hazard function: $H_{0}^{-1}(t) = \cfrac{t}{\lambda}$
+  
+  Survival time: $T = -\cfrac{log(u)}{\lambda e^{x^T\beta}}$
+  \end{center}
+  
+  \item Under weibull distribution:
+  \begin{center}
+  Baseline hazard function: $h_{0}(t) = \lambda \gamma t^{\gamma - 1}, where\ \lambda,\gamma > 0$
+  
+  Cumulative hazard function: $H_{0}(t) = \lambda t^{\gamma}$
+  
+  Inverse cumulative hazard function: $H_{0}^{-1}(t) = \bigg(\cfrac{t}{\lambda}\bigg)^{\cfrac{1}{\gamma}}$
+  
+  Survival time: $T = \bigg(-\cfrac{log(u)}{\lambda e^{x^T\beta}}\bigg)^{\cfrac{1}{\gamma}}$
+  \end{center}
+  
+  \item Under gompertz distribution:
+  \begin{center}
+  Baseline hazard function: $h_{0}(t) = e^{\alpha t}, where\ \lambda > 0,-\infty< \alpha < \infty$
+  
+  Cumulative hazard function: $H_{0}(t) = \cfrac{\lambda}{\alpha}\bigg(e^{\alpha t}-1\bigg)$
+  
+  Inverse cumulative hazard function: $H_{0}^{-1}(t) = \cfrac{1}{\alpha}log\bigg(\cfrac{\alpha}{\lambda}t + 1\bigg)$
+  
+  Survival time: $T = \cfrac{1}{\alpha}log\bigg(1 - \cfrac{\alpha log(u)}{\lambda e^{x^T \beta}} \bigg)$
+  \end{center}
+\end{enumerate}
 
-2. Generate $T_{i}$, time to event, using $X_{i}$ from step 1 and pre-specified $\beta$
+Under the 3 scenarios, we use the following steps to generate the survival dataset
+\begin{enumerate}
+  \item Randomly generate $X_{i}$, treatment assignment variable, from a bernoulli distribution with $p = 0.5$
+
+  \item Generate $T_{i}$, time to event, using $X_{i}$ from step 1 and pre-specified $\beta$
 $$T = H^{-1}_{0} \bigg(\cfrac{-log(u)}{e^{x^T \beta}} \bigg)$$
 
-3. Randomly generate $C_{i}$, censoring time, from an exponential distribution
+  \item Randomly generate $C_{i}$, censoring time, from an exponential distribution
 
-4. Determine the observe time, $Y_{i}$ by comparing event and censoring time
-$$Y{i} = min(T_{i}, C_{i}) $$
+  \item Determine the observe time, $Y_{i}$ by comparing event and censoring time
+$$Y_{i} = min(T_{i}, C_{i}) $$
 
-5. Create the status indicator variable, where 1 represents if event is observed and 0 if event is censored
+  \item Create the status indicator variable, where 1 represents if event is observed and 0 if event is censored
 $$Status = 
     \begin{cases}
       1, & T_{i}\le C_{i} \\
       0, &  T_{i} > C_{i}
     \end{cases}$$
-
-
-### Data Generation
+\end{enumerate}
 
 ### Scenario Simiulation
 

@@ -374,26 +374,18 @@ summary {
 </div>
 <div id="methods" class="section level2">
 <h2>Methods</h2>
-<p>Generating survival data involves 5 components: actual event time, censoring time, status indicator, observed time, and covariates, if needed. In order to generate event time, we can utilize the relationship between the survival function, <span class="math inline">\(S(t)\)</span>, and hazard function <span class="math inline">\(h(t)\)</span> to obtain a direct relationship between the survival function, <span class="math inline">\(S(t)\)</span>, and the baseline hazard function, <span class="math inline">\(h_{0}(t)\)</span>. Survival function is the probability of surviving beyond time <span class="math inline">\(t\)</span> <span class="math display">\[S(t) = P(T &gt; t) = 1 - F(t)\]</span> Hazard function is the instantaneous rate at which the event occurs at time <span class="math inline">\(t\)</span> and be defined as <span class="math display">\[h(t) = \cfrac{f(t)}{S(t)} = \cfrac{f(t)}{1 - F(t)}
+<div id="data-generation" class="section level3">
+<h3>Data Generation</h3>
+<p>Generating survival data involves 5 components: actual event time, censoring time, status indicator, observed time, and covariates, if needed. In order to generate event time, we can utilize the relationship between the survival function, <span class="math inline">\(S(t)\)</span>, and hazard function <span class="math inline">\(h(t)\)</span> to obtain a direct relationship between the survival function, <span class="math inline">\(S(t)\)</span>, and the baseline hazard function, <span class="math inline">\(h_{0}(t)\)</span>. Survival function is the probability of surviving beyond time <span class="math inline">\(t\)</span> <span class="math display">\[S(t) = P(T &gt; t) = 1 - F(t)\]</span> Hazard function is the instantaneous rate at which the event occurs at time <span class="math inline">\(t\)</span> and can be defined as <span class="math display">\[h(t) = \cfrac{f(t)}{S(t)} = \cfrac{f(t)}{1 - F(t)}
 = -\cfrac{\partial}{\partial y}log[1 - F(t)] 
 = -\cfrac{\partial}{\partial y}log[S(t)] \]</span></p>
 <p>Isolating <span class="math inline">\(S(t)\)</span>, we find <span class="math display">\[S(t) = e^{-H(t)}, where\ H(t) = \int_{0}^{t} h(t)dt \]</span> Additionally, we can find the connection between the cumulative hazard, <span class="math inline">\(H(t)\)</span>, and the baseline hazard. Given that <span class="math inline">\(h(t) = h_{0}(t)e^{x^T \beta}\)</span>, <span class="math display">\[H(t) = \int_{0}^{t} h_{0}(t)e^{x^T \beta}dt 
 = e^{x^T \beta}H_{0}(t), where\ H_{0}(t) = \int_{0}^{t} h_{0}(t)dt\]</span></p>
 <p>Putting it all together, we obtain <span class="math display">\[S(t) = e^{-H(t)}\\
-\ \ \ \ \ \ \ \ \ \ \ \ \ \  = e^{x^T \beta}H_{0}(t)\]</span> Finally, utilize the inverse transformation method to obtain <span class="math inline">\(T\)</span>, event time <span class="math display">\[T = H^{-1}_{0} \bigg(\cfrac{-log(u)}{e^{x^T \beta}} \bigg), where\ U \sim U(0,1)\]</span> Under each of the 3 scenarios, the following steps can be used to generate the dataset:</p>
-<ol style="list-style-type: decimal">
-<li><p>Randomly generate <span class="math inline">\(X_{i}\)</span>, treatment assignment variable, from a bernoulli distribution with <span class="math inline">\(p = 0.5\)</span></p></li>
-<li><p>Generate <span class="math inline">\(T_{i}\)</span>, time to event, as discussed above <span class="math display">\[T = H^{-1}_{0} \bigg(\cfrac{-log(u)}{e^{x^T \beta}} \bigg)\]</span></p></li>
-<li><p>Randomly generate <span class="math inline">\(C_{i}\)</span>, censoring time, from an exponential distribution</p></li>
-<li><p>Determine the observe time, <span class="math inline">\(Y_{i}\)</span> by comparing event and censoring time <span class="math display">\[Y{i} = min(T_{i}, C_{i}) \]</span></p></li>
-<li><p>Create the status indicator variable, where 1 represents if event is observed and 0 if event is censored <span class="math display">\[Status = 
- \begin{cases}
-   1, &amp; T_{i}\le C_{i} \\
-   0, &amp;  T_{i} &gt; C_{i}
- \end{cases}\]</span></p></li>
-</ol>
-<div id="data-generation" class="section level3">
-<h3>Data Generation</h3>
+\ \ \ \ \ \ \ \ \ \ \ \ \ \  = e^{x^T \beta}H_{0}(t)\]</span> Finally, utilize the inverse transformation method to obtain <span class="math inline">\(T\)</span>, event time <span class="math display">\[T = H^{-1}_{0} \bigg(\cfrac{-log(u)}{e^{x^T \beta}} \bigg), where\ U \sim U(0,1)\]</span></p>
+With a specific baseline hazard function, it is straightfoward to find generate time to event.
+
+
 </div>
 <div id="scenario-simiulation" class="section level3">
 <h3>Scenario Simiulation</h3>
