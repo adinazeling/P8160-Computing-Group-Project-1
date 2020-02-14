@@ -14,7 +14,7 @@ source("./sim.R")
 
 ## Problem Statement
 
-Time-to-event data can be modeled using proportional hazards to investigate the effect of exposure or treatment on time-to-event. A hazard rate describes the likelihood of an event (ie death, disease onset) occuring at time t and is written as the following: $h_i(t) = h_0()exp(xi)$. A proportional hazards model can then used to describe a hazard rate between two treatment or exposure groups:  $\frac{h(t\left|x_1\right.)}{h(t\left|x_2\right.)}=exp(\beta^{T}(x_1-x_2) )$. This model is useful as it no longer becomes dependent on time t. However, when fitting a survival model, assumptions must still be made about the baseline hazard function,$h_0(t)$, which is a function that describes the risk of death when all other covariates are equal to zero.  
+Time-to-event data can be modeled using proportional hazards to investigate the effect of exposure or treatment on time-to-event. A hazard rate describes the likelihood of an event (ie death, disease onset) occuring at time t and is written as the following: $h_i(t) = h_0(t)exp(x_{i})$. A proportional hazards model can then used to describe a hazard rate between two treatment or exposure groups:  $\frac{h(t\left|x_1\right.)}{h(t\left|x_2\right.)}=exp(\beta^{T}(x_1-x_2) )$. This model is useful as it no longer becomes dependent on time t. However, when fitting a survival model, assumptions must still be made about the baseline hazard function,$h_0(t)$, which is a function that describes the risk of death when all other covariates are equal to zero.  
 
 
 The exponential and Weibull proportional hazards models are parametric functions, whereby the exponential assumes a constant baseline hazard $(h_0(t) =\lambda )$ while the Weibull assumes a baseline hazard as a function of time-to-event $(h_0(t) = \lambda \gamma t^{\gamma-1})$. On the other hand, the Cox proportional hazards model is a semi-parametric model, designed to be a more flexible model by not having to specify the baseline hazard function. Depending on the data, choosing the wrong assumptions can lead to inaccurate estimates of the treatment effect . In order to explore the issues related to misspecifying the baseline hazard function, we designed a simulation study to assess three survival models on three different baseline hazard function scenarios. Each scenario generates data based on different baseline hazard functions: exponential, Weibull, and an unspecified Gompertz hazard function. Then an exponential, Weibull, and Cox proportional hazards model are evaluated with each scenario.
@@ -125,6 +125,7 @@ Further study can be carried on the following three aspects. Our study fixed the
 ## Appendix
 
 ```{r, ref.label = knitr::all_labels(), echo = TRUE, eval = FALSE}
+
 # Create a function that will create a dataset from a specific baseline hazard function
 
 set.seed(123123)
@@ -192,8 +193,10 @@ simulate = function(sim, N, beta, censor = FALSE, dist = "exponential") {
       data = generate_data(N, beta, distribution = dist, 
                            lambda = 0.1, gamma = 4, alpha = 4)
       # Fit three survival distributions
-      fit.exponential = survreg(Surv(data$observed_time, data$status) ~ data$x, dist = "exponential") 
-      fit.weibull = survreg(Surv(data$observed_time, data$status) ~ data$x, dist = "weibull")
+      fit.exponential = survreg(Surv(data$observed_time, data$status) ~ data$x, 
+                                dist = "exponential") 
+      fit.weibull = survreg(Surv(data$observed_time, data$status) ~ data$x, 
+                            dist = "weibull")
       fit.cox = coxph(Surv(data$observed_time, data$status) ~ data$x)
   
       # Save beta coefficients 
@@ -252,9 +255,11 @@ set.seed(12345)
 sim_results = 
   tibble(sample_size = c(200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700)) %>% 
   mutate(
-    output_uncensored = map(.x = sample_size, ~simulate(sim = 1000, N = .x, beta = 4, dist = "weibull")$performance),
+    output_uncensored = map(.x = sample_size, ~simulate(sim = 1000, N = .x, beta = 4, 
+                                                        dist = "weibull")$performance),
     output_censored = map(.x = sample_size, 
-                          ~simulate(sim = 1000, N = .x, beta = 4, censor = TRUE)$performance),
+                          ~simulate(sim = 1000, N = .x, beta = 4, 
+                                    censor = TRUE)$performance),
     output_uncensored = map(.x = output_uncensored, ~mutate(.x, censor = FALSE)),
     output_censored = map(.x = output_censored, ~mutate(.x, censor = TRUE))) 
 
@@ -265,7 +270,8 @@ samp_size_sim = rbind(temp1, temp2)
 
 # Plot MSE simulation results
 samp_size_sim %>% 
-  mutate(censor = factor(censor, levels = c(FALSE, TRUE), labels = c("Uncensored", "Censored"))) %>%  
+  mutate(censor = factor(censor, levels = c(FALSE, TRUE), 
+                         labels = c("Uncensored", "Censored"))) %>%  
   filter(censor == "Censored") %>% 
   ggplot(aes(x = sample_size, y = mse, color = model)) + 
   geom_point() +
@@ -300,10 +306,12 @@ set.seed(12345)
 sim_results_beta = 
   tibble(beta = c(0.1, 0.5, 1, 3, 4, 5)) %>% 
   mutate(
-    output_uncensored = map(.x = beta, ~simulate(sim = 1000, N = 500, beta = .x, dist = "Weibull")$performance))
-    #output_censored = map(.x = beta, ~simulate(sim = 1000, N = 500, beta = .x, censor = TRUE)$performance),
-    #output_uncensored = map(.x = output_uncensored, ~mutate(.x, censor = FALSE)),
-    #output_censored = map(.x = output_censored, ~mutate(.x, censor = TRUE))) 
+    output_uncensored = map(.x = beta, ~simulate(sim = 1000, N = 500, beta = .x, 
+                                                 dist = "Weibull")$performance))
+    output_censored = map(.x = beta, ~simulate(sim = 1000, N = 500, beta = .x, 
+                                               censor = TRUE)$performance),
+    output_uncensored = map(.x = output_uncensored, ~mutate(.x, censor = FALSE)),
+    output_censored = map(.x = output_censored, ~mutate(.x, censor = TRUE))) 
 
 # Join censored and uncensored data
 temp1 = sim_results_beta %>% unnest(output_uncensored) %>% select(-output_censored)
@@ -312,7 +320,6 @@ beta_sim = rbind(temp1, temp2)
 
 # Plot MSE simulation results
 temp1 %>% 
-  #filter(beta != 6) %>% 
   #mutate(censor = factor(censor, labels = c("Uncensored", "Censored"))) %>% 
   ggplot(aes(x = beta, y = mse, color = model)) + 
   geom_point() +
