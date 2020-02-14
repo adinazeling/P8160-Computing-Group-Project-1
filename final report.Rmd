@@ -14,7 +14,7 @@ source("./sim.R")
 
 ## Problem Statement
 
-Time-to-event data can be modeled using proportional hazards to investigate the effect of exposure or treatment on time-to-event. A hazard rate describes the likelihood of an event (ie death, disease onset) occuring at time t and is written as the following: $h_i(t) = h_0()exp(xi)$. A proportional hazards model can then used to describe a hazard rate between two treatment or exposure groups:  $\frac{h(t\left|x_1\right.)}{h(t\left|x_2\right.)}=exp(\beta^{T}(x_1-x_2) )$. This model is useful as it no longer becomes dependent on time t. However, when fitting a survival model, assumptions must still be made about the baseline hazard function,$h_0(t)$, which is a function that describes the risk of death when all other covariates are equal to zero.  
+Time-to-event data can be modeled using proportional hazards to investigate the effect of exposure or treatment on time-to-event. A hazard rate describes the likelihood of an event (ie death, disease onset) occuring at time t and is written as the following: $h_i(t) = h_0(t)exp(x_{i})$. A proportional hazards model can then used to describe a hazard rate between two treatment or exposure groups:  $\frac{h(t\left|x_1\right.)}{h(t\left|x_2\right.)}=exp(\beta^{T}(x_1-x_2) )$. This model is useful as it no longer becomes dependent on time t. However, when fitting a survival model, assumptions must still be made about the baseline hazard function,$h_0(t)$, which is a function that describes the risk of death when all other covariates are equal to zero.  
 
 
 The exponential and Weibull proportional hazards models are parametric functions, whereby the exponential assumes a constant baseline hazard $(h_0(t) =\lambda )$ while the Weibull assumes a baseline hazard as a function of time-to-event $(h_0(t) = \lambda \gamma t^{\gamma-1})$. On the other hand, the Cox proportional hazards model is a semi-parametric model, designed to be a more flexible model by not having to specify the baseline hazard function. Depending on the data, choosing the wrong assumptions can lead to inaccurate estimates of the treatment effect . In order to explore the issues related to misspecifying the baseline hazard function, we designed a simulation study to assess three survival models on three different baseline hazard function scenarios. Each scenario generates data based on different baseline hazard functions: exponential, Weibull, and an unspecified Gompertz hazard function. Then an exponential, Weibull, and Cox proportional hazards model are evaluated with each scenario.
@@ -27,7 +27,7 @@ Generating survival data involves 5 components: actual event time, censoring tim
 
 
 $$S(t) = P(T > t) = 1 - F(t)$$
-Hazard function is the instantaneous rate at which the event occurs at time $t$ and be defined as 
+Hazard function is the instantaneous rate at which the event occurs at time $t$ and can be defined as 
 $$h(t) = \cfrac{f(t)}{S(t)} = \cfrac{f(t)}{1 - F(t)}
 = -\cfrac{\partial}{\partial y}log[1 - F(t)] 
 = -\cfrac{\partial}{\partial y}log[S(t)] $$
@@ -41,25 +41,62 @@ $$S(t) = e^{-H(t)}\\
 \ \ \ \ \ \ \ \ \ \ \ \ \ \  = e^{x^T \beta}H_{0}(t)$$
 Finally, utilize the inverse transformation method to obtain $T$, event time
 $$T = H^{-1}_{0} \bigg(\cfrac{-log(u)}{e^{x^T \beta}} \bigg), where\ U \sim U(0,1)$$
-Under each of the 3 scenarios, the following steps can be used to generate the dataset:
 
-1. Randomly generate $X_{i}$, treatment assignment variable, from a bernoulli distribution with $p = 0.5$
+With a specific baseline hazard function, it is straightfoward to find generate time to event
+\begin{enumerate}
+  \item Under exponential distribution:
+  \begin{center}
+  Baseline hazard function: $h_{0}(t) = \lambda, where\ \lambda > 0$
+  
+  Cumulative hazard function: $H_{0}(t) = \lambda t$
+  
+  Inverse cumulative hazard function: $H_{0}^{-1}(t) = \cfrac{t}{\lambda}$
+  
+  Survival time: $T = -\cfrac{log(u)}{\lambda e^{x^T\beta}}$
+  \end{center}
+  
+  \item Under weibull distribution:
+  \begin{center}
+  Baseline hazard function: $h_{0}(t) = \lambda \gamma t^{\gamma - 1}, where\ \lambda,\gamma > 0$
+  
+  Cumulative hazard function: $H_{0}(t) = \lambda t^{\gamma}$
+  
+  Inverse cumulative hazard function: $H_{0}^{-1}(t) = \bigg(\cfrac{t}{\lambda}\bigg)^{\cfrac{1}{\gamma}}$
+  
+  Survival time: $T = \bigg(-\cfrac{log(u)}{\lambda e^{x^T\beta}}\bigg)^{\cfrac{1}{\gamma}}$
+  \end{center}
+  
+  \item Under gompertz distribution:
+  \begin{center}
+  Baseline hazard function: $h_{0}(t) = e^{\alpha t}, where\ \lambda > 0,-\infty< \alpha < \infty$
+  
+  Cumulative hazard function: $H_{0}(t) = \cfrac{\lambda}{\alpha}\bigg(e^{\alpha t}-1\bigg)$
+  
+  Inverse cumulative hazard function: $H_{0}^{-1}(t) = \cfrac{1}{\alpha}log\bigg(\cfrac{\alpha}{\lambda}t + 1\bigg)$
+  
+  Survival time: $T = \cfrac{1}{\alpha}log\bigg(1 - \cfrac{\alpha log(u)}{\lambda e^{x^T \beta}} \bigg)$
+  \end{center}
+\end{enumerate}
 
-2. Generate $T_{i}$, time to event, using $X_{i}$ from step 1 and pre-specified $\beta$
+Under the 3 scenarios, we use the following steps to generate the survival dataset
+\begin{enumerate}
+  \item Randomly generate $X_{i}$, treatment assignment variable, from a bernoulli distribution with $p = 0.5$
+
+  \item Generate $T_{i}$, time to event, using $X_{i}$ from step 1 and pre-specified $\beta$
 $$T = H^{-1}_{0} \bigg(\cfrac{-log(u)}{e^{x^T \beta}} \bigg)$$
 
-3. Randomly generate $C_{i}$, censoring time, from an exponential distribution
+  \item Randomly generate $C_{i}$, censoring time, from an exponential distribution
 
-4. Determine the observe time, $Y_{i}$ by comparing event and censoring time
-$$Y{i} = min(T_{i}, C_{i}) $$
-
-5. Create the status indicator variable, where 1 represents if event is observed and 0 if event is censored
+  \item Determine the observe time, $Y_{i}$ by comparing event and censoring time
+$$Y_{i} = min(T_{i}, C_{i}) $$
+  \item Create the status indicator variable, where 1 represents if event is observed and 0 if event is censored
 
 $$Status = 
     \begin{cases}
       1, & T_{i}\le C_{i} \\
       0, &  T_{i} > C_{i}
     \end{cases}$$
+\end{enumerate}
     
 
     
@@ -69,17 +106,19 @@ We conducted simulation studies to assess the performance of the proposed framew
 All the data generation and simulation were performed in R version 3.6.1
 
 
-
 ## Results
 
 ### Association with Beta and MES(or Bias) among three scenarios
 
-$$
-Figure 1. Association\ \ between\;\; \beta \;\; and\;\; MSE\;\; among\;\; three \;\;scenarios\;\; in \;\;uncensored \;\;data\\(A: under \;\; exponential; B: under\;\; weibull ; C: under\;\; cox )
-$$
+
+\begin{center}
+Figure 1. Association  between $\beta$  and MSE among three scenarios in uncensored data\\(A: under exponential;B:under weibull;C: undercox )
+\end{center}
 
 
-$$Figure 2. Association\;\;between\;\; \beta \;\; and\;\; Bias\;\; among\;\; three \;\;scenarios\;\; in \;\;uncensored\;\; data \\(A: under \;\; exponential; B: under\;\; weibull ; C: under\;\; cox )$$
+\begin{center}
+Figure 2. Association  between $\beta$  and Bias among three scenarios in uncensored data\\(A: under exponential;B:under weibull;C: undercox )
+\end{center}
 
 From Figure 1, we observed in Scenario 1 that as the treatment effect ($\beta$) was varied the exponential model performed the best. The cox and Weibull model decreased in performance as MSE increased with increasing $\beta$. The performance of Weibull is between Exponential and Cox models. But generally, the increase of MSE under three models is still small with the greatest MSE at 0.16. Under the weibull scenario, the weibull and cox model performed the best. The MSE is nearly 0 for all treatment effects between these two models. The exponential model performed poorly with a larger treatment effect. Under the unspecified Gompertz scenario, the Cox model performs the best. Meanwhile, weibull and exponential had an increased MSE as treatment effect increased with exponential performing the worst.
 
@@ -87,6 +126,27 @@ In Figure 2, the bias trends among three scenarios are similar to those of MSE. 
 
 
 ### Association with sample size and MSE(or Bias) among three scenarios
+\begin{center}
+Figure 3. Association between sample size and model fitting in exponential scenario\\
+(A: MSE; B: Bias)
+\end{center}
+
+The exponential model demonstrates a good fit in the exponential scenario under the uncensored data with low MSE and bias across all sample sizes. Weibull model performs better than the cox model and both MSE and bias decrease when the sample size increases. Cox model holds a similar trend in MSE and bias for censored and uncensored data. The Cox model fits the data poorly but improves as the sample size becomes larger. Overall, uncensored status performs similar to the censored.
+
+\begin{center}
+Figure 4. Association between sample size and model fitting in weibull scenario\\
+(A: MSE; B: Bias)
+\end{center}
+
+Under the weibull scenario, the weibull model fits its own data well. The exponential model performs worst with high values of MSE and bias in both censored and uncensored status. Cox model  shows a better performance than exponential when sample size is greater than 250 across the censored and uncensored status. Meanwhile, cox model fails to fit the weibull data well when sample size is less than 200, showing an exponentially decrease in the sample size ranging from 100 to 200. 
+
+\begin{center}
+Figure 5. Association between sample size and model fitting in cox scenario\\
+(A: MSE; B: Bias)
+\end{center}
+
+In the cox scenario, cox model fits the data best when the sample size is higher than 250 but fails to fit the data well with the sample size around 100. Weibull and exponential fit the data steadily without any evident bump, but the MSE and bias values are significantly large in both censored and uncensored status. Weibull model has lower MSE and bias than the cox, meaning that it holds the priority in fitting the cox data compared with exponential model. 
+
 
 
 ## Discussion
@@ -99,6 +159,7 @@ Further study can be carried on the following three aspects. Our study fixed the
 ## Appendix
 
 ```{r, ref.label = knitr::all_labels(), echo = TRUE, eval = FALSE}
+
 # Create a function that will create a dataset from a specific baseline hazard function
 
 set.seed(123123)
@@ -166,8 +227,10 @@ simulate = function(sim, N, beta, censor = FALSE, dist = "exponential") {
       data = generate_data(N, beta, distribution = dist, 
                            lambda = 0.1, gamma = 4, alpha = 4)
       # Fit three survival distributions
-      fit.exponential = survreg(Surv(data$observed_time, data$status) ~ data$x, dist = "exponential") 
-      fit.weibull = survreg(Surv(data$observed_time, data$status) ~ data$x, dist = "weibull")
+      fit.exponential = survreg(Surv(data$observed_time, data$status) ~ data$x, 
+                                dist = "exponential") 
+      fit.weibull = survreg(Surv(data$observed_time, data$status) ~ data$x, 
+                            dist = "weibull")
       fit.cox = coxph(Surv(data$observed_time, data$status) ~ data$x)
   
       # Save beta coefficients 
@@ -226,9 +289,11 @@ set.seed(12345)
 sim_results = 
   tibble(sample_size = c(200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700)) %>% 
   mutate(
-    output_uncensored = map(.x = sample_size, ~simulate(sim = 1000, N = .x, beta = 4, dist = "weibull")$performance),
+    output_uncensored = map(.x = sample_size, ~simulate(sim = 1000, N = .x, beta = 4, 
+                                                        dist = "weibull")$performance),
     output_censored = map(.x = sample_size, 
-                          ~simulate(sim = 1000, N = .x, beta = 4, censor = TRUE)$performance),
+                          ~simulate(sim = 1000, N = .x, beta = 4, 
+                                    censor = TRUE)$performance),
     output_uncensored = map(.x = output_uncensored, ~mutate(.x, censor = FALSE)),
     output_censored = map(.x = output_censored, ~mutate(.x, censor = TRUE))) 
 
@@ -239,7 +304,8 @@ samp_size_sim = rbind(temp1, temp2)
 
 # Plot MSE simulation results
 samp_size_sim %>% 
-  mutate(censor = factor(censor, levels = c(FALSE, TRUE), labels = c("Uncensored", "Censored"))) %>%  
+  mutate(censor = factor(censor, levels = c(FALSE, TRUE), 
+                         labels = c("Uncensored", "Censored"))) %>%  
   filter(censor == "Censored") %>% 
   ggplot(aes(x = sample_size, y = mse, color = model)) + 
   geom_point() +
@@ -274,10 +340,12 @@ set.seed(12345)
 sim_results_beta = 
   tibble(beta = c(0.1, 0.5, 1, 3, 4, 5)) %>% 
   mutate(
-    output_uncensored = map(.x = beta, ~simulate(sim = 1000, N = 500, beta = .x, dist = "Weibull")$performance))
-    #output_censored = map(.x = beta, ~simulate(sim = 1000, N = 500, beta = .x, censor = TRUE)$performance),
-    #output_uncensored = map(.x = output_uncensored, ~mutate(.x, censor = FALSE)),
-    #output_censored = map(.x = output_censored, ~mutate(.x, censor = TRUE))) 
+    output_uncensored = map(.x = beta, ~simulate(sim = 1000, N = 500, beta = .x, 
+                                                 dist = "Weibull")$performance))
+    output_censored = map(.x = beta, ~simulate(sim = 1000, N = 500, beta = .x, 
+                                               censor = TRUE)$performance),
+    output_uncensored = map(.x = output_uncensored, ~mutate(.x, censor = FALSE)),
+    output_censored = map(.x = output_censored, ~mutate(.x, censor = TRUE))) 
 
 # Join censored and uncensored data
 temp1 = sim_results_beta %>% unnest(output_uncensored) %>% select(-output_censored)
@@ -286,7 +354,6 @@ beta_sim = rbind(temp1, temp2)
 
 # Plot MSE simulation results
 temp1 %>% 
-  #filter(beta != 6) %>% 
   #mutate(censor = factor(censor, labels = c("Uncensored", "Censored"))) %>% 
   ggplot(aes(x = beta, y = mse, color = model)) + 
   geom_point() +
