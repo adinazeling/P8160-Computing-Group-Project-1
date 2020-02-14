@@ -14,7 +14,7 @@ source("./sim.R")
 
 ```{r, message = FALSE, warning = FALSE}
 # Write a function for simulations
-simulate = function(sim, N, beta, censor = FALSE) {
+simulate = function(sim, N, beta, censor = FALSE, dist = "exponential") {
   # Set up coefficient vectors
   exp_beta = rep(NA, sim)
   weibull_beta = rep(NA, sim)
@@ -26,6 +26,7 @@ simulate = function(sim, N, beta, censor = FALSE) {
     for (i in 1:sim) {
       # Generate data
       data = generate_data(N, beta, distribution = "weibull", 
+      #data = generate_data(N, beta, distribution = dist, 
                            lambda = 0.1, gamma = 4, alpha = 4)
       # Fit three survival distributions
       fit.exponential = survreg(Surv(data$observed_time, data$status) ~ data$x, dist = "exponential") 
@@ -44,6 +45,7 @@ simulate = function(sim, N, beta, censor = FALSE) {
     for (i in 1:sim) {
       # Generate data
       data = generate_data(N, beta, distribution = "weibull", 
+      #data = generate_data(N, beta, distribution = dist, 
                            lambda = 0.1, gamma = 4, alpha = 4)
       # Fit three survival distributions
       fit.exponential = survreg(Surv(data$time) ~ data$x, dist = "exponential") 
@@ -91,7 +93,7 @@ set.seed(12345)
 sim_results = 
   tibble(sample_size = c(200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700)) %>% 
   mutate(
-    output_uncensored = map(.x = sample_size, ~simulate(sim = 1000, N = .x, beta = 4)$performance),
+    output_uncensored = map(.x = sample_size, ~simulate(sim = 1000, N = .x, beta = 4, dist = "weibull")$performance),
     output_censored = map(.x = sample_size, 
                           ~simulate(sim = 1000, N = .x, beta = 4, censor = TRUE)$performance),
     output_uncensored = map(.x = output_uncensored, ~mutate(.x, censor = FALSE)),
@@ -104,7 +106,8 @@ samp_size_sim = rbind(temp1, temp2)
 
 # Plot MSE simulation results
 samp_size_sim %>% 
-  mutate(censor = factor(censor, labels = c("Uncensored", "Censored"))) %>% 
+  mutate(censor = factor(censor, levels = c(FALSE, TRUE), labels = c("Uncensored", "Censored"))) %>%  
+  filter(censor == "Censored") %>% 
   ggplot(aes(x = sample_size, y = mse, color = model)) + 
   geom_point() +
   geom_line(size = 1, se = FALSE) +
@@ -120,6 +123,7 @@ samp_size_sim %>%
 # Plot bias simulation results
 samp_size_sim %>% 
   mutate(censor = factor(censor, labels = c("Uncensored", "Censored"))) %>% 
+  filter(censor == "Censored") %>% 
   ggplot(aes(x = sample_size, y = bias, color = model)) + 
   geom_point() +
   geom_line(size = 1, se = FALSE) +
@@ -140,10 +144,10 @@ set.seed(12345)
 sim_results_beta = 
   tibble(beta = c(0.1, 0.5, 1, 3, 4, 5)) %>% 
   mutate(
-    output_uncensored = map(.x = beta, ~simulate(sim = 1000, N = 500, beta = .x)$performance),
-    output_censored = map(.x = beta, ~simulate(sim = 1000, N = 500, beta = .x, censor = TRUE)$performance),
-    output_uncensored = map(.x = output_uncensored, ~mutate(.x, censor = FALSE)),
-    output_censored = map(.x = output_censored, ~mutate(.x, censor = TRUE))) 
+    output_uncensored = map(.x = beta, ~simulate(sim = 1000, N = 500, beta = .x, dist = "Weibull")$performance))
+    #output_censored = map(.x = beta, ~simulate(sim = 1000, N = 500, beta = .x, censor = TRUE)$performance),
+    #output_uncensored = map(.x = output_uncensored, ~mutate(.x, censor = FALSE)),
+    #output_censored = map(.x = output_censored, ~mutate(.x, censor = TRUE))) 
 
 # Join censored and uncensored data
 temp1 = sim_results_beta %>% unnest(output_uncensored) %>% select(-output_censored)
@@ -151,15 +155,15 @@ temp2 = sim_results_beta %>% unnest(output_censored) %>% select(-output_uncensor
 beta_sim = rbind(temp1, temp2)
 
 # Plot MSE simulation results
-beta_sim %>% 
+temp1 %>% 
   #filter(beta != 6) %>% 
-  #mutate(censor = factor(censor, labels = c("Uncensored", "Censored"))) %>% 
-  filter(censor == FALSE)%>%
-  mutate(censor = ifelse(censor == FALSE, "Uncensored"))%>%
+  mutate(censor = factor(censor, labels = c("Uncensored", "Censored"))) %>% 
+  #filter(censor == FALSE)%>%
+  #mutate(censor = ifelse(censor == FALSE, "Uncensored"))%>%
   ggplot(aes(x = beta, y = mse, color = model)) + 
   geom_point() +
   geom_line(size = 1) +
-  facet_grid(.~censor) +
+  #facet_grid(.~censor) +
   labs(title = "Beta vs MSE by Survival Model",
        x = "Beta",
        y = "MSE") +
@@ -169,15 +173,15 @@ beta_sim %>%
         legend.text=element_text(size = 10))
 
 # Plot bias simulation results
-beta_sim %>% 
+temp1 %>% 
   #filter(beta != 6) %>% 
-  #mutate(censor = factor(censor, labels = c("Uncensored", "Censored"))) %>% 
+  mutate(censor = factor(censor, labels = c("Uncensored", "Censored"))) %>% 
   filter(censor == FALSE)%>%
   mutate(censor = ifelse(censor == FALSE, "Uncensored"))%>%
   ggplot(aes(x = beta, y = bias, color = model)) + 
   geom_point() +
   geom_line(size = 1) +
-  facet_grid(.~censor) +
+  #facet_grid(.~censor) +
   labs(title = "Beta vs Bias by Survival Model",
        x = "Beta",
        y = "Bias") +
