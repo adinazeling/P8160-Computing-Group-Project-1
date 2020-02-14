@@ -25,8 +25,8 @@ simulate = function(sim, N, beta, censor = FALSE, dist = "exponential") {
     
     for (i in 1:sim) {
       # Generate data
-      data = generate_data(N, beta, distribution = "weibull", 
-      #data = generate_data(N, beta, distribution = dist, 
+      #data = generate_data(N, beta, distribution = "", 
+      data = generate_data(N, beta, distribution = dist, 
                            lambda = 0.1, gamma = 4, alpha = 4)
       # Fit three survival distributions
       fit.exponential = survreg(Surv(data$observed_time, data$status) ~ data$x, dist = "exponential") 
@@ -44,8 +44,8 @@ simulate = function(sim, N, beta, censor = FALSE, dist = "exponential") {
     
     for (i in 1:sim) {
       # Generate data
-      data = generate_data(N, beta, distribution = "weibull", 
-      #data = generate_data(N, beta, distribution = dist, 
+      #data = generate_data(N, beta, distribution = "", 
+      data = generate_data(N, beta, distribution = dist, 
                            lambda = 0.1, gamma = 4, alpha = 4)
       # Fit three survival distributions
       fit.exponential = survreg(Surv(data$time) ~ data$x, dist = "exponential") 
@@ -86,6 +86,46 @@ simulate = function(sim, N, beta, censor = FALSE, dist = "exponential") {
 
 ```
 
+Create a summary table
+
+```{r}
+#with exponential baseline
+exponential_table = simulate(sim = 1000, N = 400, beta = 4, censor = FALSE, dist = "exponential") 
+
+mean(exponential_table$coefficients$exp)
+sd(exponential_table$coefficients$exp)
+
+mean(exponential_table$coefficients$weibull)
+sd(exponential_table$coefficients$weibull)
+
+mean(exponential_table$coefficients$cox)
+sd(exponential_table$coefficients$cox)
+
+#with weibull baseline
+weibull_table = simulate(sim = 1000, N = 400, beta = 4, censor = FALSE, dist = "weibull") 
+
+mean(weibull_table$coefficients$exp)
+sd(weibull_table$coefficients$exp)
+
+mean(weibull_table$coefficients$weibull)
+sd(weibull_table$coefficients$weibull)
+
+mean(weibull_table$coefficients$cox)
+sd(weibull_table$coefficients$cox)
+
+#with gompertz baseline
+cox_table = simulate(sim = 1000, N = 400, beta = 4, censor = FALSE, dist = "cox") 
+
+mean(cox_table$coefficients$exp)
+sd(cox_table$coefficients$exp)
+
+mean(cox_table$coefficients$weibull)
+sd(cox_table$coefficients$weibull)
+
+mean(cox_table$coefficients$cox)
+sd(cox_table$coefficients$cox)
+
+```
 
 ```{r, warning = FALSE}
 # Simulation for different sample sizes
