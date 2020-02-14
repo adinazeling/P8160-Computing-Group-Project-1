@@ -107,7 +107,17 @@ All the data generation and simulation were performed in R version 3.6.1
 
 ## Results
 
+
 ### Association with Beta and MES(or Bias) among three scenarios
+
+\begin{center}
+Table 1. Point estimates and $95\%$ confidence interval of the simulated result
+\end{center}
+![](./graphs in report/table1.jpg)
+
+Table 1 demonstrates all point estimates and $95\%$ confidence intervals of three models under 1000 simulations of uncensored data with sample size of 400 and true $\beta=4$. When simulating the exponential data, the baseline model-Exponential model has the exact same point estimator of the true $\beta$, with the narrowest $95\%$ CI. Weibull and Cox share the same point estimator with slightly larger CI. In scenario 2, the Weibull model has the closest estimation of the treatment effect we expected with a narrow CI. Cox follows, with a little deviation from the true $\beta$. But the exponential model fails to fit a mean similar to the weibull. In the third scenario, both Exponential and Weibull produce large deviation from the true $\beta$ and the $95\%$ CI fails to include the ture $\beta$.  Cox model fits its own data very well.
+
+
 
 ![](./graphs in report/figure1.png)
 \begin{center}
