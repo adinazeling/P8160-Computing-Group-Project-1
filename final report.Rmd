@@ -110,7 +110,7 @@ All the data generation and simulation were performed in R version 3.6.1
 
 ### Association with Beta and MES(or Bias) among three scenarios
 
-
+![Figure 1](path-to-image-here)
 \begin{center}
 Figure 1. Association  between $\beta$  and MSE among three scenarios in uncensored data\\(A: under exponential;B:under weibull;C: undercox )
 \end{center}
