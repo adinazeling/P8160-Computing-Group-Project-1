@@ -20,7 +20,7 @@ source("./sim.R")
 
  #data generate
 
-n_circle=1000
+n_circle=100
 
 sim_survival_censored=function(N,beta){
   
