@@ -62,87 +62,107 @@ generate_data = function(N, beta, distribution, lambda, gamma, alpha) {
 }
 ```
 
-Scenario 1: exponential baseline hazard
+Function to run model then obtain performance measures
 
 ```{r}
 
-#try different betas [0, 10]
-#try different N (100, 250, 500, 1000)
-#possibly vary lambda, gamma, alpha - not a priority
-
-data = generate_data(N = 500, beta = 5, distribution = "exponential", lambda = 0.1, gamma = 4, alpha = 4)
-
-fit.exponential = survreg(Surv(data$observed_time, data$status) ~ data$x, dist = "exponential") 
-#summary(fit.exponential)
-- fit.exponential$coefficients[-1]
-
-fit.weibull = survreg(Surv(data$time, data$status) ~ data$x, dist = "weibull") 
-#summary(fit.weibull)
-- fit.weibull$coefficients[-1] / fit.weibull$scale
-
-
-
-```
-
-Scenario 2: weibull baseline hazard
-
-```{r}
-
-#try different betas [0, 10]
-#try different N (100, 250, 500, 1000)
-#possibly vary lambda, gamma, alpha - not a priority
-
-
-  for (i in 1:N){
-  data = generate_data(N = 500, beta = 6, distribution = "weibull", lambda = 0.1,
-                       gamma = 4, alpha = 42)
+obtain_performance = function(baseline_hazard, censor) {
   
-  # Fit three survival distributions
-  fit.exponential = survreg(Surv(data$time) ~ data$x, dist = "exponential") 
-  fit.weibull = survreg(Surv(data$time) ~ data$x, dist = "weibull")
-  fit.cox = coxph(Surv(data$time) ~ data$x) 
+  size_vector = c(350, 400, 450, 500)
+  sim = 1000
+
+  exp_bias = rep(NA, length(size_vector))
+  weibull_bias = rep(NA, length(size_vector))
+  cox_bias = rep(NA, length(size_vector))
+
+  exp_MSE = rep(NA, length(size_vector))
+  weibull_MSE = rep(NA, length(size_vector))
+  cox_MSE = rep(NA, length(size_vector))
+
+  index = 0
+  for (sample_size in size_vector){
   
-  # Save beta coefficients 
-  exp_beta[i] = -fit.exponential$coefficients[-1]
-  weibull_beta[i] = -fit.weibull$coefficients[-1] / fit.weibull$scale
-  cox_beta[i] = fit.cox$coefficients[1]
+    index = index + 1
+  
+    exp_beta = rep(NA, sim)
+    weibull_beta = rep(NA, sim)
+    cox_beta = rep(NA, sim)
+  
+    for (i in 1:sim) {
+      data = generate_data(N = sample_size, beta = 3, distribution = baseline_hazard, lambda = 0.1,
+                           gamma = 4, alpha = 4)
+      # Fit three survival distributions
+      if (censor == FALSE){
+        fit.exponential = survreg(Surv(data$time) ~ data$x, dist = "exponential") 
+        fit.weibull = survreg(Surv(data$time) ~ data$x, dist = "weibull")
+        fit.cox = coxph(Surv(data$time) ~ data$x) 
+        }
+      else {
+        fit.exponential = survreg(Surv(data$observed_time, data$status) ~ data$x, dist = "exponential") 
+        fit.weibull = survreg(Surv(data$observed_time, data$status) ~ data$x, dist = "weibull")
+        fit.cox = coxph(Surv(data$time, data$status) ~ data$x)
+        }
+      
+      # Save beta coefficients 
+      exp_beta[i] = -fit.exponential$coefficients[-1]
+      weibull_beta[i] = -fit.weibull$coefficients[-1] / fit.weibull$scale
+      cox_beta[i] = fit.cox$coefficients[1]
+      
+      }
+  
+    exp_bias[index] = (sum(exp_beta - beta)) / sim 
+    weibull_bias[index] = (sum(weibull_beta - beta)) / sim
+    cox_bias[index] = (sum(cox_beta - beta)) / sim
+  
+    exp_MSE[index] = (sum((beta - exp_beta)^2)) / sim
+    weibull_MSE[index] = (sum((beta - weibull_beta)^2)) / sim
+    cox_MSE[index] = (sum((beta - cox_beta)^2)) / sim
+    
+    }
+  
+  performance = data_frame(size_vector, exp_bias, weibull_bias, cox_bias,
+                      exp_MSE, weibull_MSE, cox_MSE)
+  
   }
-  
-
-
-
-fit.exponential = survreg(Surv(data$time) ~ data$x, dist = "exponential") 
-#summary(fit.exponential)
-- fit.exponential$coefficients[-1]
-
-fit.weibull = survreg(Surv(data$time) ~ data$x, dist = "weibull") 
-#summary(fit.weibull)
-- fit.weibull$coefficients[-1] / fit.weibull$scale
-
-fit.cox = coxph(Surv(data$time) ~ data$x) 
-summary(fit.cox)
 ```
 
-Scenario 3: Gompertz baseline hazard
+Scenario 1: Exponential baseline hazard
 
 ```{r}
 
-#try different betas [0, 10]
-#try different N (100, 250, 500, 1000)
-#possibly vary lambda, gamma, alpha (not a priority)
+#uncensored
+performance = obtain_performance(baseline_hazard = "weibull", censor = "FALSE")
 
-data = generate_data(N = 500, beta = 6, distribution = "cox", lambda = 0.1, gamma = 4, alpha = 4)
+min_bias = min(performance$exp_bias, performance$weibull_bias, performance$cox_bias)
+max_bias = max(performance$exp_bias, performance$weibull_bias, performance$cox_bias)
 
-fit.exponential = survreg(Surv(data$time) ~ data$x, dist = "exponential") 
-#summary(fit.exponential)
-- fit.exponential$coefficients[-1]
+plot(performance$exp_bias, ylim = c(min_bias, max_bias), main = "Sample size vs. Bias without Censoring")
+lines(performance$cox_bias, col = "red")
+lines(performance$weibull_bias, col = "blue")
 
-fit.weibull = survreg(Surv(data$time) ~ data$x, dist = "weibull") 
-#summary(fit.weibull)
-- fit.weibull$coefficients[-1] / fit.weibull$scale
+min_MSE = min(performance$exp_MSE, performance$weibull_MSE, performance$cox_MSE)
+max_MSE = max(performance$exp_MSE, performance$weibull_MSE, performance$cox_MSE)
 
-fit.cox = coxph(Surv(data$time) ~ data$x) 
-summary(fit.cox)
+plot(performance$exp_MSE, ylim = c(min_MSE, max_MSE), main = "Sample size vs. MSE without Censoring")
+lines(performance$cox_MSE, col = "red")
+lines(performance$weibull_MSE, col = "blue")
+
+#censored
+performance = obtain_performance(baseline_hazard = "weibull", censor = "TRUE")
+
+min_bias = min(performance$exp_bias, performance$weibull_bias, performance$cox_bias)
+max_bias = max(performance$exp_bias, performance$weibull_bias, performance$cox_bias)
+
+plot(performance$exp_bias, main = "Sample size vs. Bias with Censoring")
+lines(performance$cox_bias, col = "red")
+lines(performance$weibull_bias, col = "blue")
+
+min_MSE = min(performance$exp_MSE, performance$weibull_MSE, performance$cox_MSE)
+max_MSE = max(performance$exp_MSE, performance$weibull_MSE, performance$cox_MSE)
+
+plot(performance$exp_MSE, main = "Sample size vs. MSE with Censoring")
+lines(performance$cox_MSE, col = "red")
+lines(performance$weibull_MSE, col = "blue")
 
 ```
 
