@@ -88,7 +88,6 @@ Further study can be carried on the following three aspects. Our study fixed the
 
 ## Appendix
 
-### Data Generation
 ```{r, ref.label = knitr::all_labels(), echo = TRUE, eval = FALSE}
 # Create a function that will create a dataset from a specific baseline hazard function
 
@@ -139,12 +138,9 @@ generate_data = function(N, beta, distribution, lambda, gamma, alpha) {
                              status = status,
                              x = x)
 }
-```
 
 
-### Simulation (Take the exponential baseline data for example)
-
-```{r, ref.label = knitr::all_labels(), echo = TRUE, eval = FALSE}
+# Simulation (Take the exponential baseline data for example)
 # Write a function for simulations
 simulate = function(sim, N, beta, censor = FALSE, dist = "exponential") {
   # Set up coefficient vectors
@@ -214,10 +210,7 @@ simulate = function(sim, N, beta, censor = FALSE, dist = "exponential") {
 }
 
 
-```
 
-
-```{r, ref.label = knitr::all_labels(), echo = TRUE, eval = FALSE}
 # Simulation for different sample sizes
 set.seed(12345)
 sim_results = 
@@ -266,9 +259,6 @@ samp_size_sim %>%
   theme(text = element_text(size = 10),
         legend.text=element_text(size = 10))
 
-```
-
-```{r, ref.label = knitr::all_labels(), echo = TRUE, eval = FALSE}
 # Simulation for different effect sizes
 set.seed(12345)
 sim_results_beta = 
