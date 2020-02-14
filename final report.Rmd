@@ -16,8 +16,7 @@ source("./sim.R")
 
 Time-to-event data can be modeled using proportional hazards to investigate the effect of exposure or treatment on time-to-event. A hazard rate describes the likelihood of an event (ie death, disease onset) occuring at time t and is written as the following: $h_i(t) = h_0(t)exp(x_{i})$. A proportional hazards model can then used to describe a hazard rate between two treatment or exposure groups:  $\frac{h(t\left|x_1\right.)}{h(t\left|x_2\right.)}=exp(\beta^{T}(x_1-x_2) )$. This model is useful as it no longer becomes dependent on time t. However, when fitting a survival model, assumptions must still be made about the baseline hazard function,$h_0(t)$, which is a function that describes the risk of death when all other covariates are equal to zero.  
 
-
-The exponential and Weibull proportional hazards models are parametric functions, whereby the exponential assumes a constant baseline hazard $(h_0(t) =\lambda )$ while the Weibull assumes a baseline hazard as a function of time-to-event $(h_0(t) = \lambda \gamma t^{\gamma-1})$. On the other hand, the Cox proportional hazards model is a semi-parametric model, designed to be a more flexible model by not having to specify the baseline hazard function. Depending on the data, choosing the wrong assumptions can lead to inaccurate estimates of the treatment effect . In order to explore the issues related to misspecifying the baseline hazard function, we designed a simulation study to assess three survival models on three different baseline hazard function scenarios. Each scenario generates data based on different baseline hazard functions: exponential, Weibull, and an unspecified Gompertz hazard function. Then an exponential, Weibull, and Cox proportional hazards model are evaluated with each scenario.
+The exponential and Weibull proportional hazards models are parametric functions, whereby the exponential assumes a constant baseline hazard $(h_0(t) =\lambda )$ while the Weibull assumes a baseline hazard as a function of time-to-event $(h_0(t) = \lambda \gamma t^{\gamma-1})$. On the other hand, the Cox proportional hazards model is a semi-parametric model, designed to be a more flexible model by not having to specify the baseline hazard function. Depending on the data, choosing the wrong assumptions can lead to inaccurate estimates of the treatment effect. In order to explore the issues related to misspecifying the baseline hazard function, we designed a simulation study to assess three survival models on three different baseline hazard function scenarios. Each scenario generates data based on different baseline hazard functions: exponential, Weibull, and an unspecified Gompertz hazard function. Then an exponential, Weibull, and Cox proportional hazards model are evaluated with each scenario.
 
 ## Methods
 
@@ -37,8 +36,8 @@ Additionally, we can find the connection between the cumulative hazard, $H(t)$, 
 $$H(t) = \int_{0}^{t} h_{0}(t)e^{x^T \beta}dt 
 = e^{x^T \beta}H_{0}(t), where\ H_{0}(t) = \int_{0}^{t} h_{0}(t)dt$$ 
 Putting it all together, we obtain 
-$$S(t) = e^{-H(t)}\\
-\ \ \ \ \ \ \ \ \ \ \ \ \ \  = e^{x^T \beta}H_{0}(t)$$
+$$S(t) = e^{-H(t)} \\
+ = e^{x^T \beta}H_{0}(t)$$
 Finally, utilize the inverse transformation method to obtain $T$, event time
 $$T = H^{-1}_{0} \bigg(\cfrac{-log(u)}{e^{x^T \beta}} \bigg), where\ U \sim U(0,1)$$
 
