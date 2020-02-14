@@ -17,6 +17,8 @@ source("./sim.R")
 Time-to-event data can be modeled using proportional hazards to investigate the effect of exposure or treatment on time-to-event. A hazard rate describes the likelihood of an event (ie death, disease onset) occuring at time t and is written as the following: $h_i(t) = h_0(t)exp(x_{i})$. A proportional hazards model can then used to describe a hazard rate between two treatment or exposure groups:  $\frac{h(t\left|x_1\right.)}{h(t\left|x_2\right.)}=exp(\beta^{T}(x_1-x_2) )$. This model is useful as it no longer becomes dependent on time t. However, when fitting a survival model, assumptions must still be made about the baseline hazard function,$h_0(t)$, which is a function that describes the risk of death when all other covariates are equal to zero.  
 
 The exponential and Weibull proportional hazards models are parametric functions, whereby the exponential assumes a constant baseline hazard $(h_0(t) =\lambda )$ while the Weibull assumes a baseline hazard as a function of time-to-event $(h_0(t) = \lambda \gamma t^{\gamma-1})$. On the other hand, the Cox proportional hazards model is a semi-parametric model, designed to be a more flexible model by not having to specify the baseline hazard function. Depending on the data, choosing the wrong assumptions can lead to inaccurate estimates of the treatment effect. In order to explore the issues related to misspecifying the baseline hazard function, we designed a simulation study to assess three survival models on three different baseline hazard function scenarios. Each scenario generates data based on different baseline hazard functions: exponential, Weibull, and an unspecified Gompertz hazard function. Then an exponential, Weibull, and Cox proportional hazards model are evaluated with each scenario.
+  
+The exponential and Weibull proportional hazards models are parametric functions, whereby the exponential assumes a constant baseline hazard $(h_0(t) =\lambda )$ while the Weibull assumes a baseline hazard as a function of time-to-event $(h_0(t) = \lambda \gamma t^{\gamma-1})$. On the other hand, the Cox proportional hazards model is a semi-parametric model, designed to be a more flexible model by not having to specify the baseline hazard function. Depending on the data, choosing the wrong assumptions can lead to inaccurate estimates of the treatment effect. In order to explore the issues related to misspecifying the baseline hazard function, we designed a simulation study to assess three survival models on three different baseline hazard function scenarios. Each scenario generates data based on different baseline hazard functions: exponential, Weibull, and an unspecified Gompertz hazard function. Then an exponential, Weibull, and Cox proportional hazards model are evaluated with each scenario.
 
 ## Methods
 
@@ -107,7 +109,17 @@ All the data generation and simulation were performed in R version 3.6.1
 
 ## Results
 
+
 ### Association with Beta and MES(or Bias) among three scenarios
+
+\begin{center}
+Table 1. Point estimates and $95\%$ confidence interval of the simulated result
+\end{center}
+![](./graphs in report/table1.jpg)
+
+Table 1 demonstrates all point estimates and $95\%$ confidence intervals of three models under 1000 simulations of uncensored data with sample size of 400 and true $\beta=4$. When simulating the exponential data, the baseline model-Exponential model has the exact same point estimator of the true $\beta$, with the narrowest $95\%$ CI. Weibull and Cox share the same point estimator with slightly larger CI. In scenario 2, the Weibull model has the closest estimation of the treatment effect we expected with a narrow CI. Cox follows, with a little deviation from the true $\beta$. But the exponential model fails to fit a mean similar to the weibull. In the third scenario, both Exponential and Weibull produce large deviation from the true $\beta$ and the $95\%$ CI fails to include the ture $\beta$.  Cox model fits its own data very well.
+
+
 
 ![](./graphs in report/figure1.png)
 \begin{center}
@@ -116,10 +128,10 @@ Figure 1. Association  between $\beta$  and MSE among three scenarios in uncenso
 
 
 ![](./graphs in report/figure2.png)
-
 \begin{center}
 Figure 2. Association  between $\beta$  and Bias among three scenarios in uncensored data\\(A: under exponential;B:under weibull;C: undercox )
 \end{center}
+
 
 From Figure 1, we observed in Scenario 1 that as the treatment effect ($\beta$) was varied the exponential model performed the best. The cox and Weibull model decreased in performance as MSE increased with increasing $\beta$. The performance of Weibull is between Exponential and Cox models. But generally, the increase of MSE under three models is still small with the greatest MSE at 0.16. Under the weibull scenario, the weibull and cox model performed the best. The MSE is nearly 0 for all treatment effects between these two models. The exponential model performed poorly with a larger treatment effect. Under the unspecified Gompertz scenario, the Cox model performs the best. Meanwhile, weibull and exponential had an increased MSE as treatment effect increased with exponential performing the worst.
 
@@ -129,6 +141,8 @@ In Figure 2, the bias trends among three scenarios are similar to those of MSE. 
 
 
 ### Association with sample size and MSE(or Bias) among three scenarios
+
+
 
 ![Figure 3](./graphs in report/figure3.png)
 \begin{center}
