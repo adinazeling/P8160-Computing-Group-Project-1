@@ -125,14 +125,14 @@ Figure 1. Differences in MSE due to varying $\beta$ across three scenarios in un
 \end{center}
 
 
-From Figure 1, under the exponential baseline hazard, as the treatment effect varies, the exponential model performs the best. Performance for cox and weibull model worsens with increasing $\beta$. Under the weibull baseline hazard, the weibull and cox model perform best as the MSE is fairly small for varied treatment effects. Performance for the exponential model significantly worsens as $\beta$ increases. Under the Gompertz baseline baseline, the cox model performs the best; meanwhile, weibull and exponential have an increased MSE as treatment effect increases, with exponential performing worst.
+From Figure 1, under the exponential baseline hazard, as the treatment effect varies, the exponential model performs the best. Performance for cox and weibull model worsens with increasing $\beta$. Under the weibull baseline hazard, the weibull and cox model perform best as the MSE is fairly small for varied treatment effects. Performance for the exponential model significantly worsens as $\beta$ increases. Under the Gompertz baseline, the cox model performs the best; meanwhile, weibull and exponential have an increased MSE as treatment effect increases, with exponential performing worst.
 
 ![](./graphs in report/figure2.png)
 \begin{center}
 Figure 2. Differences in Bias due to varying $\beta$ across three scenarios in uncensored data\\(A: under exponential; B: under weibull; C: under cox)
 \end{center}
 
-In Figure 2, the bias trends among three scenarios are similar to those of MSE. Under the exponential baseline hazard, the exponential performs well with lower bias, whereas cox and weibull models perform worse as treatment effect becomes stronger. In the weibull scenario, both cox and weibull models perform well, keeping bias low. However, the exponential model increasingly underestimates the treatment effect as it becomes larger. With the gompertz baseline hazard function, the Cox model shows consistently high performance with varying treatment effects. Weibull and exponential models decrease in performance with bias deviating further from 0 as the treatment effect become larger. 
+In Figure 2, the bias trends among three scenarios are similar to those of MSE. Under the exponential baseline hazard, the exponential performs well with lower bias, whereas Cox and Weibull models perform worse as treatment effect becomes stronger. In the Weibull scenario, both Cox and Weibull models perform well, keeping bias low. However, the exponential model increasingly underestimates the treatment effect as it becomes larger. With the Gompertz baseline hazard function, the Cox model shows consistently high performance with varying treatment effects. Weibull and exponential models decrease in performance with bias deviating further from 0 as the treatment effect become larger. 
 
 
 ### Effect of varying sample size on MSE and Bias across the three scenarios using uncensored and censored data
@@ -153,7 +153,7 @@ Figure 4. Differences in performance due to varying sample size under an weibull
 (A: MSE; B: Bias)
 \end{center}
 
-Using weibull baseline hazard function, the weibull model fits the best and exponential model performs worst with relatively high values of bias and MSE in both censored and uncensored datasets. At the beginning, cox has worse performance in comparison to weibull but stabilizes towards weibull as the sample size increases. There is a small difference in performance for censored and uncensored. 
+Using Weibull baseline hazard function, the Weibull model fits the best and exponential model performs worst with relatively high values of bias and MSE in both censored and uncensored datasets. At low sample sizes, Cox has worse performance in comparison to Weibull but stabilizes as the sample size increases. There is a small difference in performance for censored and uncensored. 
 
 ![Figure 5](./graphs in report/figure5.png)
 \begin{center}
@@ -161,7 +161,7 @@ Figure 5. Differences in performance due to varying sample size under an gompert
 (A: MSE; B: Bias)
 \end{center}
 
-In the gompertz baseline scenario, exponential model performs the worst for censored and uncensored data. At smaller sample size, cox has higher MSE than exponential and weibull. However, its MSE stabilizes and becomes the lowest out of the three as sample sizes increases. Weibull and cox consistently undestimate the treatment effect even as sample size varies. Once again, there is little difference between performance on censored and uncensored data.
+In the Gompertz baseline scenario, exponential model performs the worst for censored and uncensored data. At smaller sample size, cox has higher MSE than exponential and Weibull models. However, its MSE stabilizes and becomes the lowest out of the three as sample sizes increases. Weibull and Cox consistently undestimate the treatment effect even as sample size varies. Once again, there is little difference between performance on censored and uncensored data.
 
 
 ## Discussion
