@@ -21,7 +21,7 @@ $$\begin{equation}
     Status = 
     \begin{cases}
       1, & time\ to \ event < censored \ time \\
-      0, &  ime\ to \ event > censored \ time
+      0, & time\ to \ event > censored \ time
     \end{cases}
   \end{equation}
   $$
